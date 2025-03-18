@@ -9,7 +9,9 @@ require("dotenv").config();
 const app = express();
 
 app.use(cors({
-    origin: "couser-frontend.vercel.app",
+// origin: "https://couser-frontend.vercel.app",
+    origin: "*",
+
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
 }));
