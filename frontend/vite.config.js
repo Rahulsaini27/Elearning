@@ -8,10 +8,19 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
-  base: '/', // Ensure the base path is correct
+  base: "/",  // Ensure correct base path
   server: {
-    port: 5173, // Optional, only for local dev
+    port: 5173, // Optional for local dev
   },
+  build: {
+    outDir: "dist",
+  },
+  resolve: {
+    alias: {
+      "@": "/src",
+    },
+  }
+
 })
 
 
