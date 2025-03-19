@@ -1,13 +1,18 @@
 const express = require("express");
-const { generateUploadUrls, saveVideo, getAllVideos, deleteVideo } = require("../Controller/uploadController");
+const { generateUploadUrls, saveVideo, getAllVideos, deleteVideo, getvideourl, getimageurl } = require("../Controller/uploadController");
+const adminMiddleware = require("../Middlewares/AdminAuth");
+const UserMiddleware = require("../Middlewares/UserAuth");
 
 const router = express.Router();
 
-router.post("/get-new-upload-url", generateUploadUrls);
-router.post("/save-video", saveVideo);
-router.get("/all-video", getAllVideos);
+router.post("/get-new-upload-url", adminMiddleware, generateUploadUrls);
+router.post("/save-video", adminMiddleware, saveVideo);
+router.get("/all-video", adminMiddleware || UserMiddleware, getAllVideos);
 
-router.delete("/delete-video/:id", deleteVideo);
+router.get("/get-video-url", getvideourl);
+router.get("/get-image-url", getimageurl);
+
+router.delete("/delete-video/:id", adminMiddleware, deleteVideo);
 
 
 module.exports = router;

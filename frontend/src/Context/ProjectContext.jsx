@@ -11,7 +11,9 @@ export function ProjectProvider({ children }) { // ✅ Named export for the prov
 
 
   const [user, setUser] = useState(null);
-console.log(API_BASE_URL)
+
+
+  const token = localStorage.getItem("token");
   useEffect(() => {
     async function fetchUserData() {
       const userId = localStorage.getItem("userId");
@@ -23,8 +25,10 @@ console.log(API_BASE_URL)
       try {
         const response = await fetch(`${API_BASE_URL}${API_URL}${USER_BASE_URL}/getUser/${userId}`, {
           method: "GET",
-          headers: { "Content-Type": "application/json" },
-        });
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }        });
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -42,7 +46,7 @@ console.log(API_BASE_URL)
 
 
   return (
-    <ProjectContext.Provider value={{ API_BASE_URL, API_URL, USER_BASE_URL, ADMIN_BASE_URL , VIDEO_BASE_URL, user, setUser }}> {/* ✅ Provide value */}
+    <ProjectContext.Provider value={{ API_BASE_URL, API_URL, USER_BASE_URL, ADMIN_BASE_URL, VIDEO_BASE_URL, user, setUser }}> {/* ✅ Provide value */}
       {children}
     </ProjectContext.Provider>
   );

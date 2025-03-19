@@ -1,9 +1,16 @@
 import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { AlertContext } from "../../Context/AlertContext";
-import ReactPlayer from "react-player";
 import Swal from "sweetalert2";
 import ProjectContext from "../../Context/ProjectContext";
+
+
+
+import '@vidstack/react/player/styles/default/theme.css';
+import '@vidstack/react/player/styles/default/layouts/video.css';
+import { MediaPlayer, MediaProvider } from '@vidstack/react';
+import { defaultLayoutIcons, DefaultVideoLayout } from '@vidstack/react/player/layouts/default';
+
 
 export default function AllVideo() {
     const { Toast } = useContext(AlertContext);
@@ -18,6 +25,9 @@ export default function AllVideo() {
     const [thumbnailFile, setThumbnailFile] = useState(null);
     const { API_BASE_URL, API_URL, VIDEO_BASE_URL } = useContext(ProjectContext)
 
+    const admintoken = localStorage.getItem("admintoken");
+
+
     const handleVideoChange = (event) => {
         setUploadVideoFile(event.target.files[0]);
     };
@@ -29,7 +39,12 @@ export default function AllVideo() {
     // useEffect(() => {
     const fetchVideos = async () => {
         try {
-            const response = await axios.get(API_BASE_URL + API_URL + VIDEO_BASE_URL + "/all-video");
+            const response = await axios.get(API_BASE_URL + API_URL + VIDEO_BASE_URL + "/all-video", {
+                headers: {
+                    "Authorization": `Bearer ${admintoken}`,
+                    "Content-Type": "application/json"
+                }
+            });
             setVideos(response.data.videos);
         } catch (err) {
             console.error("Error fetching videos:", err);
@@ -40,6 +55,7 @@ export default function AllVideo() {
         fetchVideos();
 
     }, [videos])
+
     const closeuploadModal = () => {
         setUploadModelOpen(false);
     };
@@ -63,7 +79,7 @@ export default function AllVideo() {
             const images = {};
             for (const video of videos) {
                 try {
-                    const imageUrl = `${API_BASE_URL}/get-image-url?filename=${encodeURIComponent(video.title)}.png`;
+                    const imageUrl = `${API_BASE_URL}${API_URL}${VIDEO_BASE_URL}/get-image-url?filename=${encodeURIComponent(video.title)}.png`;
                     images[video.title] = imageUrl;
                 } catch (error) {
                     console.error("Error fetching image:", error);
@@ -79,7 +95,7 @@ export default function AllVideo() {
     const handlePlayVideo = async (filename) => {
         setVideoLoading(true);
         try {
-            const videoUrl = `${API_BASE_URL}/get-image-url?filename=${encodeURIComponent(filename)}.mp4`;
+            const videoUrl = `${API_BASE_URL}${API_URL}${VIDEO_BASE_URL}/get-image-url?filename=${encodeURIComponent(filename)}.mp4`;
             setSelectedVideo(videoUrl);
             setIsModalOpen(true);
         } catch (error) {
@@ -103,7 +119,10 @@ export default function AllVideo() {
             // Step 1: Request upload URLs from backend
             const response = await fetch(API_BASE_URL + API_URL + VIDEO_BASE_URL + "/get-new-upload-url", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Authorization": `Bearer ${admintoken}`,
+                    "Content-Type": "application/json"
+                },
                 body: JSON.stringify({
                     title: title,
                     videoType: videouploadFile.type,
@@ -123,8 +142,10 @@ export default function AllVideo() {
             // Step 4: Save video details to MongoDB
             const saveResponse = await fetch(API_BASE_URL + API_URL + VIDEO_BASE_URL + "/save-video", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
+                headers: {
+                    "Authorization": `Bearer ${admintoken}`,
+                    "Content-Type": "application/json"
+                }, body: JSON.stringify({
                     title,
                     description,
                     videoUrl: `https://your-bucket-name.s3.amazonaws.com/webdev/${data.video.filename}`,
@@ -176,7 +197,11 @@ export default function AllVideo() {
                     try {
                         // 🔹 Perform the delete request
                         const response = await axios.delete(`${API_BASE_URL}${API_URL}${VIDEO_BASE_URL}/delete-video/${_id}`, {
-                            params: { title }
+                            params: { title },
+                            headers: {
+                                "Authorization": `Bearer ${admintoken}`,
+                                "Content-Type": "application/json"
+                            }
                         });
 
                         console.log(response.data.message);
@@ -220,20 +245,31 @@ export default function AllVideo() {
                 <div className="bg-white rounded-lg  grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
                     {videos.length > 0 ? (
                         videos.map((video, index) => (
-                            <div key={index} className="bg-white rounded-lg hover:scale-105 duration-400 shadow-md overflow-hidden text-center">
-                                <div className="h-40 bg-cover bg-center" style={{ backgroundImage: `url(${videoImages[video.title]})` }} ></div>
-                                <div className="p-4 ">
-                                    <h3 className="text-lg font-bold mb-2">{video.title}</h3>
 
-                                    <p >{video.description}</p>
-                                    <div className=" flex justify-evenly items-center py-4">
-                                        <button onClick={() => handlePlayVideo(video.title)} type="button" class=" cursor-pointer bg-gray-950 hover:bg-gray-700 text-white font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"> Watch Now</button>
-                                        <svg onClick={() => handleVideoDelete(video._id, video.title)} xmlns="http://www.w3.org/2000/svg" className=" cursor-pointer hover:scale-105 duration-300 text-red-600" x="0px" y="0px" width="30" height="30" viewBox="0 0 30 30">
+
+                            <div key={index} className="bg-white rounded-lg  overflow-hidden max-w-sm mx-auto hover:scale-105 duration-400 shadow-md">
+
+                                <img src={videoImages[video.title]} alt="Video Thumbnail" className="w-full h-48 object-cover" />
+
+                                <div className="p-4">
+                                    <h3 className="text-xl font-bold mb-2">{video.title}</h3>
+                                    <p className="text-gray-600 mb-4">{video.description}</p>
+                                    <div className=" flex justify-center items-center gap-5">
+                                        <button
+                                            onClick={() => handlePlayVideo(video.title)}
+                                            className="w-full cursor-pointer bg-gray-950 hover:bg-gray-700 text-white font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                                        >
+                                            Watch Now
+                                        </button>
+                                        <svg onClick={() => handleVideoDelete(video._id, video.title)} xmlns="http://www.w3.org/2000/svg" className=" cursor-pointer hover:scale-105 duration-300 text-red-600" x="0px" y="0px" width="50" height="50" viewBox="0 0 30 30">
                                             <path fill="red" d="M 14.984375 2.4863281 A 1.0001 1.0001 0 0 0 14 3.5 L 14 4 L 8.5 4 A 1.0001 1.0001 0 0 0 7.4863281 5 L 6 5 A 1.0001 1.0001 0 1 0 6 7 L 24 7 A 1.0001 1.0001 0 1 0 24 5 L 22.513672 5 A 1.0001 1.0001 0 0 0 21.5 4 L 16 4 L 16 3.5 A 1.0001 1.0001 0 0 0 14.984375 2.4863281 z M 6 9 L 7.7929688 24.234375 C 7.9109687 25.241375 8.7633438 26 9.7773438 26 L 20.222656 26 C 21.236656 26 22.088031 25.241375 22.207031 24.234375 L 24 9 L 6 9 z"></path>
                                         </svg>
                                     </div>
+
                                 </div>
                             </div>
+
+
                         ))
                     ) : (
                         <p>No videos uploaded yet.</p>
@@ -371,24 +407,12 @@ export default function AllVideo() {
                         > ✕
                         </button>
                         <div className="relative">
-                            <ReactPlayer
-                                key={selectedVideo} // Force re-render when video changes
-                                url={selectedVideo} // Video source 
-                                playing={isModalOpen}
-                                controls
-                                width="100%"
-                                height="auto"
-                                className="rounded-lg"
-                                config={{
-                                    file: {
-                                        attributes: {
-                                            controlsList: "nodownload", // Prevent download option
-                                            onContextMenu: (e) => e.preventDefault(), // Disable right-click
-                                        },
-                                    },
-                                }}
-                            />
-                            {/* Watermark */}
+
+                            <MediaPlayer title="Video Player" src={selectedVideo}>
+                                <MediaProvider />
+                                <DefaultVideoLayout icons={defaultLayoutIcons} />
+                            </MediaPlayer>
+
                             <img
                                 src="https://www.requingroup.com/logo.png"
                                 className="absolute top-5 right-5 w-20 opacity-50"

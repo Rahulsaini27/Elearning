@@ -9,21 +9,21 @@ const { registerUser,
     toggleUserStatus
 
 } = require("../Controller/UserController");
-const authMiddleware = require("../Middlewares/Auth");
 
+const adminMiddleware = require("../Middlewares/AdminAuth");
+const UserMiddleware = require("../Middlewares/UserAuth");
 const router = express.Router();
 
 // User authentication routes
-router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.post("/verify-token", verifyToken);
 
 // Protected Routes
-router.get("/getUser/:id", getUserProfile);
-// router.get("/profile", getUserProfile);
-router.get("/getUser", getAllUsers);
-router.put("/edit/:id", updateUser);
-router.delete("/delete/:id", deleteUser);
-router.put("/updateStatus/:id", toggleUserStatus);
+router.post("/register", adminMiddleware, registerUser);
+router.get("/getUser/:id", adminMiddleware|| UserMiddleware, getUserProfile);
+router.get("/getUser", adminMiddleware, getAllUsers);
+router.put("/edit/:id", adminMiddleware  , updateUser);
+router.delete("/delete/:id", adminMiddleware, deleteUser);
+router.put("/updateStatus/:id", adminMiddleware, toggleUserStatus);
 
 module.exports = router;

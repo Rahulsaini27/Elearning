@@ -8,6 +8,8 @@ function Students() {
   const { Toast } = useContext(AlertContext);
   const { API_BASE_URL, API_URL, USER_BASE_URL } = useContext(ProjectContext)
 
+  const admintoken = localStorage.getItem("admintoken");
+
   const [totalusers, settotalUsers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [users, setUsers] = useState([]);
@@ -36,8 +38,10 @@ function Students() {
       const response = await fetch(API_BASE_URL + API_URL + USER_BASE_URL + "/register", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Authorization": `Bearer ${admintoken}`,
+          "Content-Type": "application/json"
         },
+
         body: JSON.stringify({
           name: newUser.name,
           email: newUser.email,
@@ -81,8 +85,18 @@ function Students() {
   // Fetch Users from Backend API
   const fetchUsers = async () => {
     try {
-      const response = await fetch(API_BASE_URL + API_URL + USER_BASE_URL + "/getUser");
+      const response = await fetch(
+        API_BASE_URL + API_URL + USER_BASE_URL + "/getUser", // <-- Ensure this URL is correct
+        {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${admintoken}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
       console.log("Fetch Response:", response);
+
       if (!response.ok) {
         throw new Error("Failed to fetch users");
       }
@@ -95,6 +109,7 @@ function Students() {
   };
 
 
+
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -105,8 +120,10 @@ function Students() {
       const response = await fetch(`${API_BASE_URL}${API_URL}${USER_BASE_URL}/updateStatus/${userId}`, {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
+          "Authorization": `Bearer ${admintoken}`,
+          "Content-Type": "application/json"
         },
+
         body: JSON.stringify({ isActive: status }),
       });
 
@@ -142,7 +159,15 @@ function Students() {
         if (result.isConfirmed) {
           try {
             // 🔹 Perform delete request
-            const response = await axios.delete(`${API_BASE_URL}${API_URL}${USER_BASE_URL}/delete/${userId}`);
+            const response = await axios.delete(`${API_BASE_URL}${API_URL}${USER_BASE_URL}/delete/${userId}`,
+              {
+                method: "GET",
+                headers: {
+                  "Authorization": `Bearer ${admintoken}`,
+                  "Content-Type": "application/json"
+                }
+              }
+            );
 
             if (response.status === 200) {
               Toast.fire({ icon: "success", title: "User deleted successfully!" });

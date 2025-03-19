@@ -100,3 +100,91 @@ exports.deleteVideo = async (req, res) => {
         res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 };
+
+//watch url 
+exports.getimageurl = async (req , res )=>{
+    const { filename } = req.query;
+    
+        if (!filename) {
+            return res.status(400).json({ error: "Filename is required" });
+        }
+    
+        const bucketName = process.env.AWS_BUCKET_NAME;
+        const key = `webdev/${filename}`;
+    
+        try {
+    
+            // 🔹 Get S3 object (image)
+            const { Body, ContentType, ContentLength } = await s3.send(
+                new GetObjectCommand({
+                    Bucket: bucketName,
+                    Key: key
+                })
+            );
+    
+            res.setHeader("Content-Type", ContentType || "image/jpeg"); // Default to JPEG
+            res.setHeader("Accept-Ranges", "bytes");
+            res.setHeader("Content-Length", ContentLength);
+    
+            // ✅ Pipe the image stream directly
+            Body.pipe(res);
+    
+            Body.on("error", (err) => {
+                console.error("Error streaming image:", err);
+                if (!res.headersSent) {
+                    res.status(500).end();
+                }
+            });
+    
+        } catch (error) {
+            console.error("Error fetching image:", error);
+            if (!res.headersSent) {
+                return res.status(500).json({ error: "Internal Server Error" });
+            }
+        }
+}
+
+
+
+exports.getvideourl = async (req, res) => {
+    const { filename } = req.query;
+
+    if (!filename) {
+        return res.status(400).json({ error: "Filename is required" });
+    }
+
+    const bucketName = process.env.AWS_BUCKET_NAME;
+    const key = `webdev/${filename}`;
+
+    try {
+
+        // 🔹 Correct way to get S3 object
+        const { Body, ContentLength } = await s3.send(
+            new GetObjectCommand({
+                Bucket: bucketName,
+                Key: key
+            })
+        );
+
+        res.setHeader("Content-Type", "video/mp4");
+        res.setHeader("Accept-Ranges", "bytes");
+        res.setHeader("Content-Length", ContentLength);
+
+
+        // ✅ Pipe the video stream directly
+        Body.pipe(res);
+
+        Body.on("error", (err) => {
+            console.error("Error streaming video:", err);
+            if (!res.headersSent) {
+                res.status(500).end();
+            }
+        });
+
+    } catch (error) {
+        console.error("Error fetching video:", error);
+        if (!res.headersSent) {
+            return res.status(500).json({ error: "Internal Server Error" });
+        }
+    }
+}
