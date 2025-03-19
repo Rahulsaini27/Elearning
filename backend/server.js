@@ -8,10 +8,10 @@ require("dotenv").config();
 const app = express();
 
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: "https://course-frontend-nu.vercel.app",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
-   allowedHeaders: ["Authorization", "Content-Type"]
+    allowedHeaders: ["Authorization", "Content-Type"]
 
 }));
 // app.use(cors())
@@ -25,7 +25,9 @@ app.use("/api/user", UserRoute);
 app.use("/api/admin", AdminRoute);
 app.use("/api/videos", uploadRoute);
 
-
+app.get("/", (req, res) => {
+    res.send("This backend is running!");
+});
 // 🔹 Connect to MongoDB (only if not already connected)
 mongoose.connect(process.env.MONGODB_URI,
     { dbName: "Course" }).then(() => {
