@@ -42,7 +42,7 @@ const ProtectedAdminRoute = () => {
     verifyToken();
   }, []);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return ;
 
   return isAuthenticated ? <Outlet /> : <Navigate to="/adminlogin" replace />;
 };

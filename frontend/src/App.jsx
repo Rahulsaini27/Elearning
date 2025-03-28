@@ -1,28 +1,38 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import AdminMain from "./Pages/Admin/AdminMain";
-import DashBoard from "./Components/Admin/DashBoard";
 
-import Dashboard from "./Components/Client/Dashboard";
 import ProtectedRoute from "./Context/PrivateRoute"; // Import ProtectedRoute
 import ClientLogin from "./Pages/Client/ClientLogin";
 import ClientLayout from "./Components/Client/ClientLayout";
 import Students from "./Components/Admin/Students";
 import AdminLogin from "./Pages/Admin/AdminLogin";
 import ProtectedAdminRoute from "./Context/ProtectedAdminRoute";
-import ClientVideo from "./Components/Client/ClientVideo";
-import NewVideo from "./Components/Admin/NewVideo";
 import ClientUI from "./Pages/Client/ClientUI";
+import ForgetPassword from "./Pages/Client/ForgetPassword";
+import AdminCourse from "./Components/Admin/AdminCourse";
+import Coursevideo from "./Components/Admin/Coursevideo";
+import ClientCourse from "./Components/Client/ClientCourse";
+import ClientDashboard from "./Components/Client/ClientDashboard";
+import LearningVideo from "./Components/Client/LearningVideo";
+import ClientTest from "./Components/Client/ClientTest";
+import AdminDashboard from "./Components/Admin/AdminDashboard";
+import AdminVideo from "./Components/Admin/AdminVideo";
+import ClientProfile from "./Components/Client/ClientProfile";
 
 function App() {
+
   const routes = createBrowserRouter([
     {
       path: "/login",
       element: <ClientLogin />,
-    }, 
-
+    },
     {
-      path :"/",
-      element :<ClientUI/>,
+      path: "/forgot-password",
+      element: <ForgetPassword />,
+    },
+    {
+      path: "/",
+      element: <ClientUI />,
     },
     {
       path: "/client",
@@ -30,24 +40,28 @@ function App() {
       children: [
         {
           path: "",
-          element: <ClientLayout />, 
+          element: <ClientLayout />,
           children: [
-            { path: "", element: <Dashboard /> }, 
-            { path: "course", element: <ClientVideo /> }, 
+            { path: "", element: <ClientDashboard /> },
+            { path: "course", element: <ClientCourse /> },
+            { path: "my-profile", element: <ClientProfile /> },
+
+            { path: "course/:courseId", element: <LearningVideo /> },
+            { path: "upload-video", element: <ClientTest /> },
+
           ],
         },
       ],
     },
-    
     {
-          path :"/AdminLogin",
-          element :<AdminLogin/>
-     },
+      path: "/AdminLogin",
+      element: <AdminLogin />
+    },
 
 
     {
       path: "/admin",
-      element: <ProtectedAdminRoute />, 
+      element: <ProtectedAdminRoute />,
       children: [
         {
           path: "",
@@ -55,7 +69,7 @@ function App() {
           children: [
             {
               path: "",
-              element: <DashBoard />,
+              element: <AdminDashboard />,
             },
             {
               path: "students",
@@ -63,18 +77,22 @@ function App() {
             },
             {
               path: "new-video",
-              element: <NewVideo />,
+              element: <AdminVideo />,
             },
+          
+            {
+              path: "Admin-course",
+              element: <AdminCourse />
+            },
+            {
+              path: "Admin-course/videos/:courseId",
+              element: <Coursevideo />
+            }
+            
           ],
         },
       ],
     },
-
-
-    
-   
-
-
 
   ]);
 
@@ -108,94 +126,6 @@ export default App;
 
 
 
-
-
-
-
-
-
-
-
-// import { RouterProvider, createBrowserRouter } from "react-router-dom";
-// import ClientMain from "./Pages/Client/ClientMain";
-// import AdminMain from "./Pages/Admin/AdminMain";
-// import DashBoard from "./Components/Admin/DashBoard";
-// import Login from "./Pages/Client/Login";
-// import Register from "./Pages/Client/Register";
-// import Courses from "./Components/Admin/Courses";
-// // import VideoUploadPage from "./Components/VideoPlayer";
-// import AllVideo from "./Components/Admin/AllVideo";
-// import ClientDashBoard from "./Components/Client/ClientDashBoard";
-// import Dashboard from "./Components/Client/Dashboard";
-// // import Students from "./Components/Admin/Students";
-
-// function App() {
-
-
-
-//   const routes = createBrowserRouter(
-//     [
-//       {
-//         path: "/",
-//         element: <ClientMain />,
-//       },
-
-
-  
-//     //  {
-//     //   path: "/client",
-//     //   element: <ProtectedRoute />, // Protect this route
-//     //   children: [
-//     //     {
-//     //       path: "",
-//     //       element: <ClientDashBoard />,
-//     //     },
-//     //     {
-//     //       path: "dashboard",
-//     //       element: <Dashboard />,
-//     //     },
-//     //   ],
-//     // },
-
-
-//       {
-//         path: "/admin",
-//         element: <AdminMain />,
-//         children: [
-//           {
-//             path: "",
-//             element: <DashBoard />
-//           },
-//           {
-//             path: "/admin/courses",
-//             element: <Courses />
-//           },
-//           {
-//             path: "/admin/all-video",
-//             element: <AllVideo />
-//           },
-//         ]
-//       },
-     
-//     ]
-//   )
-//   return (
-//     <RouterProvider router={routes} />
-//   );
-// }
-
-// export default App;
-
-
-
-//  // {
-//       //   path: "/login",
-//       //   element: <Login />,
-//       // },
-//       // {
-//       //   path: "/register",
-//       //   element: <Register />,
-//       // }
 
 
 

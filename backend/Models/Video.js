@@ -6,6 +6,9 @@ const videoSchema = new mongoose.Schema(
         description: { type: String, required: true },
         videoUrl: { type: String, required: true },
         thumbnailUrl: { type: String, required: true },
+        course: { type: mongoose.Schema.Types.ObjectId, ref: "Course", required: true }, // Ensure courseId is required
+        order: { type: Number, default: 0 }, // Order of the video in the course
+
     },
     { timestamps: true }
 );

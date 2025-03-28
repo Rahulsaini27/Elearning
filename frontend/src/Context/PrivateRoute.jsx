@@ -42,7 +42,7 @@ const ProtectedRoute = () => {
     verifyToken();
   }, []);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return ;
 
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 };

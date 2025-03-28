@@ -1,36 +1,101 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useContext } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  LayoutDashboard,
+  Users,
+  Video,
+  Book,
+  HelpCircle,
+  LogOut,
+  BookOpen
+} from "lucide-react";
+import ProjectContext from "../../Context/ProjectContext";
 
-function ClientSidebar({ isOpen }) {
-  const navigate = useNavigate(); // Hook for navigation
+function ClientSidebar({ isOpen, closeSidebar }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useContext(ProjectContext); // Ensure user context is handled safely
+
 
   const menuItems = [
-    { title: "Dashboard", link: "/client" },
-    { title: "Your Course", link: "/client/course" },
+    {
+      title: "Dashboard",
+      link: "/client",
+      icon: <LayoutDashboard size={20} className="text-[#7f8c8d]" />
+    },
+    {
+      title: "My Courses",
+      link: "/client/course",
+      icon: <BookOpen size={20} className="text-[#7f8c8d]" />
+    },
+    {
+      title: "Your Test",
+      link: "/client/upload-video",
+      icon: <Video size={20} className="text-[#7f8c8d]" />
+    }
   ];
 
+
   const handleLogout = () => {
-    localStorage.removeItem("token"); // Remove token
-    localStorage.removeItem("userId"); // Remove user ID
-    navigate("/login"); // Redirect to login page
+    localStorage.removeItem("token");
+    navigate("/login");
   };
 
   return (
-    <aside className={`fixed top-0 left-0 z-40 w-64 h-screen pt-16 bg-white border-r border-gray-200 transform transition-transform lg:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"}`}>
-      <div className="h-full px-4 py-6 overflow-y-auto flex flex-col justify-between">
-        <ul className="space-y-4 font-medium">
-          {menuItems.map((item, index) => (
-            <li key={index}>
-              <a href={item.link} className="block p-3 text-gray-700 hover:bg-gray-100 rounded-lg">
-                {item.title}
-              </a>
-            </li>
-          ))}
-        </ul>
-        <div onClick={handleLogout} className=" font-medium flex  items-center justify-center hover:bg-gray-100 rounded-lg cursor-pointer">
-          <h1 className="block p-3 text-gray-700 ">Log Out</h1>
-          <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" className="h-5 w-10" viewBox="0 0 16 16"><path d="M10.95 15.84h-11V.17h11v3.88h-1V1.17h-9v13.67h9v-2.83h1v3.83z" /><path d="M5 8h6v1H5zM11 5.96l4.4 2.54-4.4 2.54V5.96z" /></svg>
+    <aside
+      className={`fixed top-0 left-0 z-40 w-64 h-screen bg-white 
+        border-r border-[#e0e0e0] flex flex-col 
+        transform transition-transform 
+        ${isOpen ? "translate-x-0" : "-translate-x-full"} 
+        lg:translate-x-0 shadow-lg`}
+    >
+      <div className="p-6 border-b border-[#e0e0e0]">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-[#4ecdc4] flex items-center justify-center text-white font-bold">
+          {user?.name?.charAt(0)?.toUpperCase() || "CL"}
+
+          </div>
+          <div>
+            <h2 className="text-sm font-semibold text-[#2c3e50]">Your Dashboard</h2>
+            <p className="text-xs text-[#7f8c8d]">Manage Your Platform</p>
+          </div>
         </div>
+      </div>
+
+      <nav className="flex-1 overflow-y-auto py-4">
+        {menuItems.map((item, index) => (
+          <Link
+            to={item.link}
+            key={index}
+            className={`flex items-center gap-3 p-3 rounded-lg px-4 transition-colors duration-200 
+              ${location.pathname === item.link
+                ? "bg-[#4ecdc4]/10 text-[#4ecdc4]"
+                : "hover:bg-[#f0f6f6] text-[#2c3e50]"}`}
+          >
+            {item.icon}
+            <span className="text-sm font-medium">{item.title}</span>
+          </Link>
+        ))}
+      </nav>
+
+      <div className="p-4 border-t border-[#e0e0e0]">
+        <div className="bg-[#4ecdc4]/10 rounded-lg p-4 text-center">
+          <HelpCircle className="mx-auto text-[#4ecdc4] mb-2" size={24} />
+          <h3 className="text-sm font-semibold mb-1 text-[#2c3e50]">Help & Support</h3>
+          <p className="text-xs text-[#7f8c8d] mb-3">Need assistance? We're here to help!</p>
+          <button className="w-full py-2 bg-[#4ecdc4] text-white rounded-lg text-sm hover:bg-[#45b7aa] transition-colors">
+            Contact Support
+          </button>
+        </div>
+
+        <button
+          onClick={handleLogout}
+          className="w-full mt-4 py-2 flex items-center justify-center gap-2 
+            text-[#ff6b6b] hover:bg-[#ff6b6b]/10 rounded-lg transition-colors"
+        >
+          <LogOut size={18} />
+          <span className="text-sm font-medium">Logout</span>
+        </button>
       </div>
     </aside>
   );

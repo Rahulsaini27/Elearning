@@ -7,10 +7,12 @@ import { ProjectProvider } from "./Context/ProjectContext.jsx"; // ✅ Import co
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <ProjectProvider> {/* ✅ Wrap with ProjectProvider */}
-      <AlertProvider>
-        <App />
-      </AlertProvider>
-    </ProjectProvider>
+      <ProjectProvider> {/* ✅ Wrap with ProjectProvider */}
+        <AlertProvider>
+          <App />
+        </AlertProvider>
+      </ProjectProvider>
+   
+
   </StrictMode>
 );

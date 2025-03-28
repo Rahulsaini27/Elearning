@@ -7,16 +7,19 @@ const UserSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     phone: { type: String },
+    otp: { type: String },
     address: { type: String },
     education: { type: String },
+    enrolledCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
     occupation: { type: String },
-    dateOfBirth: { type: String },
     gender: {
         type: String,
         enum: ["male", "female", "other"], // ✅ Ensure it matches frontend options
         required: true,
     },
-    isActive: { type: Boolean, default: true }
+    isActive: { type: Boolean, default: true },
+    lastLogin: { type: Date }, // Track last login date
+    streak: { type: Number, default: 0 }, // Track login streak
 }
     , {
         timestamps: true

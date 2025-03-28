@@ -20,10 +20,17 @@ app.use(express.json());
 const UserRoute = require("./Routes/UserRoute");
 const AdminRoute = require("./Routes/AdminRoute");
 const uploadRoute = require("./Routes/uploadRoutes");
+const passwordRoute = require("./Routes/passwordRoute");
+const courseRoutes = require("./Routes/courseRoutes");
+const videoRoute = require("./Routes/videoRoutes");
+
 app.use(express.static("public"));
 app.use("/api/user", UserRoute);
 app.use("/api/admin", AdminRoute);
 app.use("/api/videos", uploadRoute);
+app.use("/api/courses", courseRoutes);
+app.use("/api/password", passwordRoute);
+app.use("/api/secureVideos", videoRoute);
 
 app.get("/", (req, res) => {
     res.send("This backend is running!");

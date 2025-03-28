@@ -6,8 +6,9 @@ const { registerUser,
     getAllUsers,
     updateUser,
     deleteUser,
-    toggleUserStatus
-
+    toggleUserStatus,
+    assignCourseToUser,
+    removeStudentFromCourse
 } = require("../Controller/UserController");
 
 const adminMiddleware = require("../Middlewares/AdminAuth");
@@ -20,10 +21,15 @@ router.post("/verify-token", verifyToken);
 
 // Protected Routes
 router.post("/register", adminMiddleware, registerUser);
-router.get("/getUser/:id", adminMiddleware|| UserMiddleware, getUserProfile);
+router.get("/getUser/:id", adminMiddleware || UserMiddleware, getUserProfile);
 router.get("/getUser", adminMiddleware, getAllUsers);
-router.put("/edit/:id", adminMiddleware  , updateUser);
+
+router.put("/edit/:id", adminMiddleware, updateUser);
+
 router.delete("/delete/:id", adminMiddleware, deleteUser);
 router.put("/updateStatus/:id", adminMiddleware, toggleUserStatus);
+//route for assign remove a course 
+router.post("/assign-course", adminMiddleware, assignCourseToUser);
+router.post("/remove-student/:courseId/:userId", adminMiddleware, removeStudentFromCourse);
 
 module.exports = router;
