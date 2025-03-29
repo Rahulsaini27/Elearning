@@ -40,6 +40,8 @@ const AdminLogin = () => {
 
       localStorage.setItem("admintoken", data.admintoken);
       setTimeout(() => navigate("/admin"), 2000);
+            window.location.reload(); // 🔥 Force refresh to reload dashboard with updated data
+
       Toast.fire({ icon: "success", title: "Login Successfully" });
     } catch (error) {
       const errorMsg = error.response?.data?.msg || "Invalid credentials";
