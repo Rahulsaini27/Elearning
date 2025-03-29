@@ -53,8 +53,7 @@ const ClientLogin = () => {
       localStorage.setItem("userId", userId);
 
       navigate("/client");
-            window.location.reload(); // 🔥 Force refresh to reload dashboard with updated data
-
+    
       Toast.fire({ icon: "success", title: "Login Successfully" });
     } catch (error) {
       const errorMsg = error.response?.data?.msg || "Invalid credentials";
