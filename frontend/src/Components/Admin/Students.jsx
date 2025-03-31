@@ -4,11 +4,13 @@ import { AlertContext } from "../../Context/AlertContext";
 import axios from "axios";
 import Swal from "sweetalert2";
 import ProjectContext from "../../Context/ProjectContext";
-import { ChevronDown, ChevronUp, Edit, Trash2, Check, X, Plus } from 'lucide-react';
+import { ChevronDown, ChevronUp, Edit, Trash2, Check, X, Plus, FileX } from 'lucide-react';
 
 function Students() {
   const { Toast } = useContext(AlertContext);
-  const { API_BASE_URL, API_URL, USER_BASE_URL, course, totalusers, fetchUsers, setTotalUsers } = useContext(ProjectContext)
+  const { API_BASE_URL, API_URL, USER_BASE_URL, course, totalusers, fetchUsers, setTotalUsers  } = useContext(ProjectContext)
+
+
   const admintoken = localStorage.getItem("admintoken");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -269,7 +271,7 @@ function Students() {
   };
 
   const removeHandler = async (userId, courseId) => {
-    
+
     try {
       Swal.fire({
         title: "Are you sure?",
@@ -293,7 +295,7 @@ function Students() {
                 },
               }
             );
-          
+
             if (response.status === 200) {
               Toast.fire({ icon: "success", title: "User deleted successfully!" });
               fetchUsers(); // ✅ Refresh user list after deletion
@@ -307,7 +309,7 @@ function Students() {
               text: error.response?.data?.message || error.message,
             });
           }
-          
+
         }
       });
     } catch (error) {
@@ -320,89 +322,103 @@ function Students() {
   return (
     <>
       {/* main Components */}
-      <div className="flex flex-col items-center">
-        <div className="w-full max-w-7xl p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold text-[#2c3e50]">All Users</h2>
-            <button
-              onClick={() => setShowModal(true)}
-              className="px-4 py-2 text-white bg-[#4ecdc4] hover:bg-[#45b7aa] transition duration-300 rounded-3xl shadow-md hover:shadow-lg"
-            >
-              Add User
-            </button>
-          </div>
+      <div className="min-h-screen bg-[#F0F6F6]">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-black relative">
+            All Students ({totalusers.length})
+          </h2>
 
-          <div className="w-full rounded-lg shadow-md border border-[#e0e0e0] overflow-hidden">
-            {/* Mobile View (< 768px) - Card-based layout */}
-            <div className="md:hidden">
-              {totalusers?.map((user, index) => (
-                <div
-                  key={index}
-                  className="border-b border-[#e0e0e0] p-4 hover:bg-[#f0f6f6] transition-colors"
-                >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h3 className="font-medium text-[#2c3e50]">{user.name}</h3>
-                      <p className="text-sm text-[#7f8c8d]">{user.email}</p>
+          {/* Add Student Button */}
+          <div
+            onClick={() => setShowModal(true)}
+            className="px-4 cursor-pointer py-2 text-white bg-[#4ecdc4] hover:bg-[#45b7aa] transition duration-300 rounded-3xl flex items-center gap-2 transform hover:scale-105"
+          >
+            <Plus size={18} />
+            Add Student
+          </div>
+        </div>
+
+        {/* Student Cards Grid */}
+        <div className="w-full bg-[#F0F6F6] rounded-lg shadow-md">
+          {/* Mobile View (< 768px) - Card-based layout */}
+          <div className="md:hidden">
+            {totalusers.length > 0 ? (
+              totalusers.map((user, index) => (
+                <div key={user._id} className="border-b border-gray-200 p-4 hover:bg-[#e0f4f4] transition-all duration-300">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start">
+                        <h3 className="font-medium text-gray-900 break-words pr-2">{user.name}</h3>
+                        <button
+                          onClick={() => toggleRowExpand(user._id)}
+                          className="p-1 rounded-full hover:bg-[#e0f4f4] flex-shrink-0 mt-1"
+                        >
+                          {expandedRows[user._id] ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                        </button>
+                      </div>
+                      <p className="text-sm text-gray-500 mt-1">{user.email}</p>
+                      <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                        <span className={`w-2 h-2 rounded-full ${user.isActive ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                        {user.isActive ? 'Active' : 'Inactive'}
+                      </p>
                     </div>
-                    <button
-                      onClick={() => toggleRowExpand(user._id)}
-                      className="p-1 cursor-pointer rounded-full hover:bg-[#4ecdc4]/10"
-                    >
-                      {expandedRows[user._id] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                    </button>
                   </div>
 
                   {expandedRows[user._id] && (
-                    <div className="mt-3 space-y-2 text-sm">
-                      <div className="grid grid-cols-2 gap-2">
-                        {[
-                          { label: 'Contact', value: user.phone },
-                          { label: 'Gender', value: user.gender },
-                          { label: 'Occupation', value: user.occupation },
-                          { label: 'Education', value: user.education }
-                        ].map(({ label, value }) => (
-                          <div key={label}>
-                            <p className="text-[#7f8c8d]">{label}:</p>
-                            <p>{value || 'N/A'}</p>
-                          </div>
-                        ))}
+                    <div className="mt-3 pl-2 animate-fadeIn overflow-hidden">
+                      <div className="bg-white bg-opacity-50 p-3 rounded-lg border-l-4 border-[#4ecdc4] shadow-sm">
+                        <div className="grid grid-cols-2 gap-2 mb-2">
+                          {[
+                            { label: 'Phone', value: user.phone },
+                            { label: 'Gender', value: user.gender },
+                            { label: 'Occupation', value: user.occupation },
+                            { label: 'Education', value: user.education }
+                          ].map(({ label, value }) => (
+                            <div key={label}>
+                              <p className="text-xs text-gray-500">{label}:</p>
+                              <p className="text-sm">{value || 'N/A'}</p>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="mb-2">
+                          <p className="text-xs text-gray-500">Address:</p>
+                          <p className="text-sm break-words">{user.address || 'N/A'}</p>
+                        </div>
+
+                        <div>
+                          <p className="text-xs text-gray-500 mb-1">Enrolled Courses:</p>
+                          {user.enrolledCourses && user.enrolledCourses.length > 0 ? (
+                            <div className="space-y-1">
+                              {user.enrolledCourses.map((course) => (
+                                <div
+                                  key={course._id}
+                                  className="flex items-center gap-2 border rounded-lg px-2 py-1 text-sm shadow-sm border-l-4 border-[#4ecdc4] group hover:bg-[#e0f4f4] transition-all"
+                                >
+                                  <span className="flex-grow truncate">{course.title}</span>
+                                  <button
+                                    onClick={() => removeHandler(user._id, course._id)}
+                                    className="opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-700"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-gray-500">No courses enrolled</p>
+                          )}
+                        </div>
                       </div>
 
-                      <div>
-                        <p className="text-[#7f8c8d]">Address:</p>
-                        <p className="break-words">{user.address || 'N/A'}</p>
-                      </div>
-
-                      <div>
-                        <p className="text-[#7f8c8d]">Enrolled Courses:</p>
-                        {user.enrolledCourses && user.enrolledCourses.length > 0 ? (
-                          <ul className="list-disc pl-5 mt-1">
-                            {user.enrolledCourses.map((course) => (
-                              <div key={course._id} className="flex gap-5 items-center">
-                                <li className="break-words">{course.title}</li>
-                                <Trash2
-                                  onClick={() => removeHandler(user._id, course._id)}
-                                  size={18}
-                                  className="text-[#ff6b6b] cursor-pointer hover:text-red-700"
-                                />
-                              </div>
-                            ))}
-                          </ul>
-                        ) : (
-                          <p>No courses enrolled</p>
-                        )}
-                      </div>
-
-                      <div className="pt-2 flex flex-wrap gap-2">
+                      <div className="flex gap-3 pt-2 mt-3 flex-wrap">
                         <button
                           onClick={() => {
                             setIsModalOpen(true);
                             setUserId(user._id);
                             setUserName(user.name);
                           }}
-                          className="flex cursor-pointer items-center gap-1 bg-[#4ecdc4] text-white  rounded-lg 
-          hover:bg-[#45b7aa] px-3 py-1.5 text-sm h transition-colors"
+                          className="flex items-center gap-1 bg-purple-100 text-purple-700 px-3 py-1.5 rounded-md text-sm hover:bg-purple-200 transition-all hover:shadow-md"
                         >
                           <Plus size={16} />
                           Assign Course
@@ -410,9 +426,9 @@ function Students() {
 
                         <button
                           onClick={() => changeStatus(user._id, !user.isActive)}
-                          className={`flex cursor-pointer items-center gap-1 px-3 py-1.5 rounded-md text-sm transition-colors ${user.isActive
-                            ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                            : 'bg-red-100 text-red-800 hover:bg-red-200'
+                          className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-sm transition-all hover:shadow-md ${user.isActive
+                            ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                            : 'bg-red-100 text-red-700 hover:bg-red-200'
                             }`}
                         >
                           {user.isActive ? <Check size={16} /> : <X size={16} />}
@@ -424,7 +440,7 @@ function Students() {
                             setShowEditModal(true);
                             editUser(user);
                           }}
-                          className="flex cursor-pointer items-center gap-1 bg-[#f0f6f6] text-[#2c3e50] px-3 py-1.5 rounded-md text-sm hover:bg-[#e0f4f4] transition-colors"
+                          className="flex items-center gap-1 bg-blue-100 text-blue-700 px-3 py-1.5 rounded-md text-sm hover:bg-blue-200 transition-all hover:shadow-md"
                         >
                           <Edit size={16} />
                           Edit
@@ -432,7 +448,7 @@ function Students() {
 
                         <button
                           onClick={() => deleteUser(user._id)}
-                          className="flex cursor-pointer items-center gap-1 bg-[#ff6b6b]/10 text-[#ff6b6b] px-3 py-1.5 rounded-md text-sm hover:bg-[#ff6b6b]/20 transition-colors"
+                          className="flex items-center gap-1 bg-red-100 text-red-700 px-3 py-1.5 rounded-md text-sm hover:bg-red-200 transition-all hover:shadow-md"
                         >
                           <Trash2 size={16} />
                           Delete
@@ -441,100 +457,223 @@ function Students() {
                     </div>
                   )}
                 </div>
-              ))}
-            </div>
+              ))
+            ) : (
+              <div className="text-center py-12">
+                <FileX size={48} className="mx-auto mb-4 text-gray-300" />
+                <p className="text-gray-500">No students registered yet.</p>
+              </div>
+            )}
+          </div>
 
-            {/* Desktop View (≥ 768px) - Traditional table layout */}
-            <div className="hidden md:block">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-[#e0e0e0]">
-                  <thead className="bg-[#f0f6f6]">
-                    <tr>
-                      {[
-                        '#', 'User', 'Courses', 'Details', 'Status', 'Actions'
-                      ].map((header) => (
-                        <th
-                          key={header}
-                          className={`px-6 py-3 text-left text-xs font-medium text-[#7f8c8d] uppercase tracking-wider 
-                          ${header === 'Details' ? 'hidden lg:table-cell' : ''} 
-                          ${header === 'Actions' ? 'text-right' : ''}`}
-                        >
-                          {header}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="bg-[#F0F6F6] divide-y divide-[#e0e0e0]">
-                    {totalusers?.map((user, index) => (
-                      <tr
-                        key={index}
-                        className="hover:bg-[#e0f4f4] transition-colors"
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap text-[#7f8c8d]">{index + 1}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+          {/* Tablet and Desktop View (≥ 768px) - Table layout */}
+          <div className="hidden md:block overflow-hidden rounded-xl">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-[#e0f4f4]">
+                  <tr>
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider w-12 border-b-2 border-[#4ecdc4]">#</th>
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider border-b-2 border-[#4ecdc4]">Student Details</th>
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider border-b-2 border-[#4ecdc4]">Enrolled Courses</th>
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider hidden lg:table-cell border-b-2 border-[#4ecdc4]">Additional Info</th>
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider w-24 border-b-2 border-[#4ecdc4]">Status</th>
+                    <th scope="col" className="px-3 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider w-24 border-b-2 border-[#4ecdc4]">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-[#F0F6F6] divide-y divide-gray-200">
+                  {totalusers.length > 0 ? (
+                    totalusers.map((user, index) => (
+                      <tr key={user._id} className="hover:bg-[#e0f4f4] transition-colors duration-300">
+                        {/* Number */}
+                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                          {index + 1}
+                        </td>
+
+                        {/* Student Details */}
+                        <td className="px-3 py-4">
                           <div className="flex flex-col">
-                            <div className="text-sm font-medium text-[#2c3e50]">{user.name}</div>
-                            <div className="text-sm text-[#7f8c8d]">{user.email}</div>
-                            <div className="text-sm text-[#7f8c8d] md:hidden">{user.phone}</div>
+                            <h3 className="text-sm font-medium text-gray-900 break-words">
+                              {user.name}
+                            </h3>
+                            <p className="text-sm text-gray-500 mt-1">{user.email}</p>
+                            <p className="text-sm text-gray-500 mt-1">{user.phone || 'No phone'}</p>
                           </div>
                         </td>
 
-                        <td className="px-6 py-4">
+                        {/* Enrolled Courses */}
+                        <td className="px-3 py-4">
                           <div className="max-w-xs">
                             {user.enrolledCourses && user.enrolledCourses.length > 0 ? (
-                              <div className="max-h-24 overflow-y-auto">
-                                <ul className="list-disc pl-5 text-sm text-[#2c3e50]">
-                                  {user.enrolledCourses.map((course) => (
-                                    <div key={course._id} className="flex gap-5 items-center">
-                                      <li className="break-words">{course.title}</li>
-                                      <Trash2
-                                        onClick={() => removeHandler(user._id, course._id)}
-                                        size={18}
-                                        className="text-[#ff6b6b] cursor-pointer hover:text-red-700"
-                                      />
-                                    </div>
-                                  ))}
-                                </ul>
-                              </div>
+                              <>
+                                {/* Display directly if 2 or fewer courses */}
+                                {user.enrolledCourses.length <= 2 && !expandedRows[user._id] ? (
+                                  <div className="space-y-2">
+                                    {user.enrolledCourses.map((course) => (
+                                      <div
+                                        key={course._id}
+                                        className="flex items-center gap-2 border rounded-lg px-3 py-2 shadow-sm border-l-4 border-[#4ecdc4] group hover:bg-[#e0f4f4] transition-all"
+                                      >
+                                        <div className="flex-shrink-0 w-2 h-2 rounded-full bg-[#4ecdc4]"></div>
+                                        <span className="text-sm text-gray-800 flex-grow truncate">
+                                          {course.title}
+                                        </span>
+                                        <button
+                                          onClick={() => removeHandler(user._id, course._id)}
+                                          className="opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-700"
+                                        >
+                                          <Trash2 size={16} />
+                                        </button>
+                                      </div>
+                                    ))}
+
+                                    <button
+                                      onClick={() => {
+                                        setIsModalOpen(true);
+                                        setUserId(user._id);
+                                        setUserName(user.name);
+                                      }}
+                                      className="mt-2 inline-flex items-center px-3 py-1 border border-[#4ecdc4] text-[#4ecdc4] rounded-md text-xs hover:bg-[#4ecdc4]/10 transition-all"
+                                    >
+                                      <Plus size={14} className="mr-1" /> Assign Course
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <>
+                                    {/* Show summary with See more option if more than 2 courses and not expanded */}
+                                    {user.enrolledCourses.length > 2 && !expandedRows[user._id] ? (
+                                      <div>
+                                        <div className="space-y-2">
+                                          {/* Show first 2 courses */}
+                                          {user.enrolledCourses.slice(0, 2).map((course) => (
+                                            <div
+                                              key={course._id}
+                                              className="flex items-center gap-2 border rounded-lg px-3 py-2 shadow-sm border-l-4 border-[#4ecdc4] group hover:bg-[#e0f4f4] transition-all"
+                                            >
+                                              <div className="flex-shrink-0 w-2 h-2 rounded-full bg-[#4ecdc4]"></div>
+                                              <span className="text-sm text-gray-800 flex-grow truncate">
+                                                {course.title}
+                                              </span>
+                                              <button
+                                                onClick={() => removeHandler(user._id, course._id)}
+                                                className="opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-700"
+                                              >
+                                                <Trash2 size={16} />
+                                              </button>
+                                            </div>
+                                          ))}
+                                        </div>
+
+                                        <button
+                                          onClick={() => toggleRowExpand(user._id)}
+                                          className="text-xs text-[#4ecdc4] hover:text-[#45b7aa] mt-2 flex items-center transition-all hover:pl-1"
+                                        >
+                                          <ChevronDown size={16} className="mr-1 transition-transform duration-300 transform hover:translate-y-1" />
+                                          See all {user.enrolledCourses.length} courses
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      /* Expanded view showing all courses */
+                                      expandedRows[user._id] && (
+                                        <div className="animate-slideDown">
+                                          <div className="max-h-40 overflow-y-auto pr-1">
+                                            <div className="space-y-2">
+                                              {user.enrolledCourses.map((course) => (
+                                                <div
+                                                  key={course._id}
+                                                  className="flex items-center gap-2 border rounded-lg px-3 py-2 shadow-sm border-l-4 border-[#4ecdc4] group hover:bg-[#e0f4f4] transition-all"
+                                                >
+                                                  <div className="flex-shrink-0 w-2 h-2 rounded-full bg-[#4ecdc4]"></div>
+                                                  <span className="text-sm text-gray-800 flex-grow truncate">
+                                                    {course.title}
+                                                  </span>
+                                                  <button
+                                                    onClick={() => removeHandler(user._id, course._id)}
+                                                    className="opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-700"
+                                                  >
+                                                    <Trash2 size={16} />
+                                                  </button>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          </div>
+
+                                          <button
+                                            onClick={() => {
+                                              setIsModalOpen(true);
+                                              setUserId(user._id);
+                                              setUserName(user.name);
+                                            }}
+                                            className="mt-2 inline-flex items-center px-3 py-1 border border-[#4ecdc4] text-[#4ecdc4] rounded-md text-xs hover:bg-[#4ecdc4]/10 transition-all"
+                                          >
+                                            <Plus size={14} className="mr-1" /> Assign Course
+                                          </button>
+
+                                          <button
+                                            onClick={() => toggleRowExpand(user._id)}
+                                            className="text-xs text-[#4ecdc4] hover:text-[#45b7aa] mt-2 ml-2 flex items-center transition-all hover:pl-1"
+                                          >
+                                            <ChevronUp size={16} className="mr-1 transition-transform duration-300 transform hover:-translate-y-1" />
+                                            Show less
+                                          </button>
+                                        </div>
+                                      )
+                                    )}
+                                  </>
+                                )}
+                              </>
                             ) : (
-                              <span className="text-sm text-[#7f8c8d]">No courses enrolled</span>
+                              <div className="flex items-center text-sm text-gray-500 py-2">
+                                <span className="w-6 h-6 mr-2 rounded-full bg-gray-100 flex items-center justify-center">
+                                  <X size={14} />
+                                </span>
+                                No courses enrolled
+
+                                <button
+                                  onClick={() => {
+                                    setIsModalOpen(true);
+                                    setUserId(user._id);
+                                    setUserName(user.name);
+                                  }}
+                                  className="ml-3 inline-flex items-center px-3 py-1 border border-[#4ecdc4] text-[#4ecdc4] rounded-md text-xs hover:bg-[#4ecdc4]/10 transition-all"
+                                >
+                                  <Plus size={14} className="mr-1" /> Assign Course
+                                </button>
+                              </div>
                             )}
-
-                            <button
-                              onClick={() => {
-                                setIsModalOpen(true);
-                                setUserId(user._id);
-                                setUserName(user.name);
-                              }}
-                              className="mt-2 inline-flex border border-[#4ecdc4] text-[#4ecdc4] rounded-md px-2 py-1 cursor-pointer items-center text-xs hover:bg-[#4ecdc4]/10"
-                            >
-                              <Plus size={14} className="mr-1" /> Assign Course
-                            </button>
                           </div>
                         </td>
 
-                        <td className="px-6 py-4 whitespace-nowrap hidden lg:table-cell">
-                          <div className="text-sm text-[#2c3e50] grid grid-cols-2 gap-x-4 gap-y-1">
-                            {[
-                              { label: 'Phone', value: user.phone },
-                              { label: 'Gender', value: user.gender },
-                              { label: 'Occupation', value: user.occupation },
-                              { label: 'Education', value: user.education }
-                            ].map(({ label, value }) => (
-                              <React.Fragment key={label}>
-                                <span className="text-[#7f8c8d]">{label}:</span>
-                                <span>{value || 'N/A'}</span>
-                              </React.Fragment>
-                            ))}
+                        {/* Additional Info */}
+                        <td className="px-3 py-4 whitespace-normal hidden lg:table-cell">
+                          <div className="max-w-md">
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                              {[
+                                { label: 'Gender', value: user.gender },
+                                { label: 'Occupation', value: user.occupation },
+                                { label: 'Education', value: user.education }
+                              ].map(({ label, value }) => (
+                                <React.Fragment key={label}>
+                                  <span className="text-gray-500">{label}:</span>
+                                  <span className="text-gray-800">{value || 'N/A'}</span>
+                                </React.Fragment>
+                              ))}
+                            </div>
+                            <div className="mt-2">
+                              <span className="text-gray-500">Address:</span>
+                              <p className="text-sm text-gray-800 break-words line-clamp-2">
+                                {user.address || 'N/A'}
+                              </p>
+                            </div>
                           </div>
                         </td>
 
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        {/* Status */}
+                        <td className="px-3 py-4 whitespace-nowrap">
                           <button
                             onClick={() => changeStatus(user._id, !user.isActive)}
-                            className={`cursor-pointer inline-flex items-center px-2.5 py-1.5 rounded-full text-xs font-medium ${user.isActive
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800'
+                            className={`inline-flex items-center px-2.5 py-1.5 rounded-full text-xs font-medium transition-all ${user.isActive
+                              ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                              : 'bg-red-100 text-red-800 hover:bg-red-200'
                               }`}
                           >
                             {user.isActive ? <Check size={14} className="mr-1" /> : <X size={14} className="mr-1" />}
@@ -542,52 +681,54 @@ function Students() {
                           </button>
                         </td>
 
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex justify-end space-x-2">
+                        {/* Actions */}
+                        <td className="px-3 py-4 whitespace-nowrap">
+                          <div className="flex items-center justify-center space-x-3">
                             <button
                               onClick={() => {
                                 setShowEditModal(true);
                                 editUser(user);
                               }}
-                              className="text-[#4ecdc4] cursor-pointer hover:text-[#45b7aa]"
-                              title="Edit user"
+                              className="text-[#4ecdc4] hover:text-[#45b7aa] transition-all duration-300 transform hover:scale-110 hover:rotate-12"
+                              title="Edit student"
                             >
-                              <Edit size={18} />
+                              <Edit size={22} />
                             </button>
                             <button
                               onClick={() => deleteUser(user._id)}
-                              className="text-[#ff6b6b] cursor-pointer hover:text-red-700"
-                              title="Delete user"
+                              className="text-red-600 hover:text-red-800 transition-all duration-300 transform hover:scale-110 hover:-rotate-12"
+                              title="Delete student"
                             >
-                              <Trash2 size={18} />
+                              <Trash2 size={22} />
                             </button>
                           </div>
                         </td>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6" className="px-3 py-12 text-center text-gray-500">
+                        <FileX size={48} className="mx-auto mb-4 text-gray-300" />
+                        <p>No students registered yet.</p>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
-
-            {/* Empty state */}
-            {(!totalusers || totalusers.length === 0) && (
-              <div className="text-center py-12">
-                <p className="text-[#7f8c8d]">No users found</p>
-              </div>
-            )}
           </div>
         </div>
       </div>
+
       {/* add user model */}
       {showModal && (
         <div className="fixed z-[500] inset-0 bg-black/50 flex justify-center items-center p-4">
-          <div className="w-full max-w-3xl bg-[#f0f6f6] rounded-lg shadow-lg p-6 relative">
+          <div className="w-full max-w-xl bg-[#f0f6f6] rounded-lg shadow-lg p-6 relative">
             {/* Modal Header */}
             <div className="flex justify-between items-center mb-4 border-b pb-3 border-[#e0e0e0]">
               <h2 className="text-2xl font-bold text-[#2c3e50]">User Information Form</h2>
               <button
-                className="text-[#4ecdc4] hover:text-[#45b7aa] transition"
+                className="text-[#4ecdc4] cursor-pointer hover:text-[#45b7aa] transition"
                 onClick={() => setShowModal(false)}
               >
                 <svg
@@ -726,7 +867,7 @@ function Students() {
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className="mt-4 bg-[#4ecdc4] text-white py-2 px-4 rounded-md hover:bg-[#45b7aa] transition-colors"
+                  className="mt-4 cursor-pointer bg-[#4ecdc4] text-white py-2 px-4 rounded-md hover:bg-[#45b7aa] transition-colors"
                 >
                   Submit
                 </button>
@@ -741,12 +882,12 @@ function Students() {
       {/* edit model */}
       {showEditModal && editUserDetails && (
         <div className="fixed z-[500] inset-0 bg-black/50 flex justify-center items-center p-4">
-          <div className="w-full max-w-3xl bg-[#f0f6f6] rounded-lg shadow-lg p-6 relative">
+          <div className="w-full max-w-xl bg-[#f0f6f6] rounded-lg shadow-lg p-6 relative">
             {/* Modal Header */}
             <div className="flex justify-between items-center mb-4 border-b pb-3 border-[#e0e0e0]">
               <h2 className="text-2xl font-bold text-[#2c3e50]">Edit User Information</h2>
               <button
-                className="text-[#4ecdc4] hover:text-[#45b7aa] transition"
+                className="text-[#4ecdc4] hover:text-[#45b7aa] cursor-pointer transition"
                 onClick={() => setShowEditModal(false)}
               >
                 <svg
@@ -869,7 +1010,7 @@ function Students() {
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className="mt-4 bg-[#4ecdc4] text-white py-2 px-4 rounded-md hover:bg-[#45b7aa] transition-colors"
+                  className="mt-4 cursor-pointer bg-[#4ecdc4] text-white py-2 px-4 rounded-md hover:bg-[#45b7aa] transition-colors"
                 >
                   Save Changes
                 </button>
@@ -881,12 +1022,12 @@ function Students() {
       {/* Assign Course to User */}
       {isModalOpen && (
         <div className="fixed z-[500] inset-0 bg-black/50 flex justify-center items-center p-4">
-          <div className="w-full max-w-3xl bg-[#f0f6f6] rounded-lg shadow-lg p-6 relative">
+          <div className="w-full max-w-md bg-[#f0f6f6] rounded-lg shadow-lg p-6 relative">
             {/* Modal Header */}
             <div className="flex justify-between items-center mb-4 border-b pb-3 border-[#e0e0e0]">
               <h2 className="text-2xl font-bold text-[#2c3e50]">Assign Course to User</h2>
               <button
-                className="text-[#4ecdc4] hover:text-[#45b7aa] transition"
+                className="text-[#4ecdc4] hover:text-[#45b7aa] transition cursor-pointer"
                 onClick={() => setIsModalOpen(false)}
               >
                 <svg
@@ -909,7 +1050,7 @@ function Students() {
                 type="text"
                 value={userName}
                 disabled
-                className="mt-1 block w-full p-2 border border-[#4ecdc4]/30 rounded-md shadow-sm bg-gray-100 text-gray-700 cursor-not-allowed"
+                className="mt-1 block w-full p-2 border border-[#4ecdc4]/30 rounded-md shadow-sm text-gray-700 cursor-not-allowed"
               />
             </div>
 
@@ -933,13 +1074,13 @@ function Students() {
             <div className="flex justify-end space-x-3 mt-6">
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="py-2 px-4 bg-[#2c3e50] text-white rounded-md hover:bg-[#45b7aa] transition-colors"
+                className="py-2 px-4 bg-[#2c3e50] text-white cursor-pointer  rounded-md hover:bg-[#45b7aa] transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAssignCourse}
-                className="py-2 px-4 bg-[#4ecdc4] text-white rounded-md hover:bg-[#45b7aa] transition-colors"
+                className="py-2 px-4 bg-[#4ecdc4] text-white cursor-pointer rounded-md hover:bg-[#45b7aa] transition-colors"
               >
                 Assign Course
               </button>

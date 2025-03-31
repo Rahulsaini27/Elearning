@@ -6,7 +6,7 @@ import '@vidstack/react/player/styles/default/theme.css';
 import '@vidstack/react/player/styles/default/layouts/video.css';
 import { MediaPlayer, MediaProvider } from '@vidstack/react';
 import { defaultLayoutIcons, DefaultVideoLayout } from '@vidstack/react/player/layouts/default';
-import { ChevronLeft, ChevronRight, PlayCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, PlayCircle, AlertCircle, CloudSnow } from 'lucide-react';
 import ProjectContext from '../../Context/ProjectContext';
 
 function LearningVideo() {
@@ -15,15 +15,19 @@ function LearningVideo() {
     const [videoImages, setVideoImages] = useState({});
     const [selectedVideo, setSelectedVideo] = useState(null);
     const [videoLoading, setVideoLoading] = useState(false);
-
+    const [allvideoLoading, setAllVideoLoading] = useState(true);
     const userId = localStorage.getItem("userId");
     const { API_BASE_URL, API_URL, VIDEO_BASE_URL, SECURE_VIDEO_BASE_URL } = useContext(ProjectContext);
+
     const token = localStorage.getItem("token");
+    
+    // Fetch videos
     useEffect(() => {
+        setAllVideoLoading(true);
         if (courseId && userId) {
             axios.get(`${API_BASE_URL}${API_URL}${SECURE_VIDEO_BASE_URL}/course/${courseId}/${userId}`, {
                 headers: {
-                    Authorization: `Bearer ${token}`, // ✅ Properly set Authorization header
+                    Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json"
                 }
             })
@@ -32,13 +36,16 @@ function LearningVideo() {
                     if (response.data.videos && response.data.videos.length > 0) {
                         handlePlayVideo(response.data.videos[0].title);
                     }
+                    setAllVideoLoading(false);
                 })
                 .catch(error => {
                     console.error("Error fetching videos:", error);
+                    setAllVideoLoading(false);
                 });
         }
-    }, [courseId, userId]);
+    }, [courseId, userId, API_BASE_URL, API_URL, SECURE_VIDEO_BASE_URL, token]);
 
+    // Fetch images for videos
     useEffect(() => {
         const fetchImages = async () => {
             const images = {};
@@ -54,7 +61,7 @@ function LearningVideo() {
         };
 
         if (videos.length > 0) fetchImages();
-    }, [videos]);
+    }, [videos, API_BASE_URL, API_URL, VIDEO_BASE_URL]);
 
     const handlePlayVideo = async (filename) => {
         setVideoLoading(true);
@@ -67,7 +74,6 @@ function LearningVideo() {
             setVideoLoading(false);
         }
     };
-
     // Auto-play video when selectedVideo updates
     useEffect(() => {
         const videoElement = document.querySelector("video");
@@ -93,6 +99,40 @@ function LearningVideo() {
         }
     };
 
+    // Loading state
+    if (allvideoLoading) {
+        return (
+            <div className="flex flex-col items-center justify-center h-screen bg-[#f0f6f6]">
+                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#4ecdc4]"></div>
+                <p className="mt-4 text-[#2c3e50] font-medium">Loading course videos...</p>
+            </div>
+        );
+    }
+
+    // No videos available UI
+    if (videos.length === 0) {
+        return (
+            <div className="min-h-screen bg-[#f0f6f6] text-[#2c3e50]">
+                <div className="container mx-auto px-4 py-8">
+                    {/* Navigation */}
+                    <div className="mb-6">
+                        <Link to="#" className="inline-flex items-center text-[#4ecdc4] hover:text-[#45b7aa] transition-colors">
+                            <ChevronLeft className="mr-2" />
+                            Back to Dashboard
+                        </Link>
+                    </div>
+
+                    <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl shadow-lg p-8 text-center">
+                        <AlertCircle className="w-16 h-16 text-[#4ecdc4] mb-4" />
+                        <h2 className="text-2xl font-bold text-[#2c3e50] mb-3">No Videos Available</h2>
+                        <p className="text-[#7f8c8d] max-w-md">Videos for this course have not been uploaded yet. Please check back later or contact support for more information.</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Main render with videos
     return (
         <div className="min-h-screen bg-[#f0f6f6] text-[#2c3e50]">
             <div className="container mx-auto px-4 py-8">
@@ -110,14 +150,24 @@ function LearningVideo() {
                     <div className="lg:col-span-2 space-y-6">
                         {/* Video Player */}
                         <div className="relative overflow-hidden">
-                            <MediaPlayer
-                                className="w-full aspect-video"
-                                title={videos[currentIndex]?.title || "Course Video"}
-                                src={selectedVideo || ""}
-                            >
-                                <MediaProvider />
-                                <DefaultVideoLayout icons={defaultLayoutIcons} />
-                            </MediaPlayer>
+                            {videoLoading ? (
+                                <div className="flex flex-col items-center justify-center w-full aspect-video bg-[#e0f0f0] rounded-lg">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-[#4ecdc4]"></div>
+                                    <p className="mt-4 text-[#2c3e50] font-medium">Loading video...</p>
+                                </div>
+                            ) : (
+                                <MediaPlayer
+                                    className="w-full aspect-video"
+                                    title={videos[currentIndex]?.title || "Course Video"}
+                                    playsInline
+                                    onError={(e) => console.error("Video error:", e)}
+                                    poster={videos[currentIndex]?.thumbnail || ""}
+                                    src={selectedVideo || ""}
+                                >
+                                    <MediaProvider />
+                                    <DefaultVideoLayout icons={defaultLayoutIcons} />
+                                </MediaPlayer>
+                            )}
                             <img
                                 src="/logo.png"
                                 className="absolute top-4 right-4 w-16 opacity-40"

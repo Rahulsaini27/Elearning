@@ -15,7 +15,6 @@ const ProtectedRoute = () => {
         setLoading(false);
         return;
       }
-
       try {
         const response = await fetch(API_BASE_URL + API_URL + USER_BASE_URL + "/verify-token", {
           method: "POST",
@@ -42,8 +41,10 @@ const ProtectedRoute = () => {
     verifyToken();
   }, []);
 
-  if (loading) return ;
-
+  if (loading) return 
+  <div className="flex items-center justify-center h-screen">
+  <p className="text-xl text-[#4ecdc4]">Loading...</p>
+</div>;
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 };
 

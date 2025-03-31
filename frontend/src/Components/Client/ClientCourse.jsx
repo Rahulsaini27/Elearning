@@ -3,58 +3,9 @@ import ProjectContext from "../../Context/ProjectContext";
 import { useNavigate } from "react-router-dom";
 
 const ClientCourse = () => {
-  const { API_BASE_URL,COURSE_BASE_URL, userCourse, API_URL } = useContext(ProjectContext);
-  const [secureUserCourses, setSecureUserCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const userId = localStorage.getItem("userId");
+  const { secureUserCourses, loading, error } = useContext(ProjectContext);
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
-  const fetchCoursesForUser = async () => {
-    try {
-      if (!userId || !Array.isArray(userCourse) || userCourse.length === 0) {
-        setLoading(false);
-        return;
-      }
-
-      const coursePromises = userCourse.map(async (course) => {
-        const courseId = course._id || course.courseId;
-        if (!courseId) return null;
-
-        const response = await fetch(
-          `${API_BASE_URL}${API_URL}${COURSE_BASE_URL}/${userId}/${courseId}`,
-          {
-            method: "GET", // Ensure GET method (if updating, use PUT)
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-      
-
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch course ${courseId}`);
-        }
-        return response.json();
-      });
-
-      const courseData = await Promise.all(coursePromises);
-      setSecureUserCourses(courseData.filter(data => data).map((data) => data.course));
-    } catch (err) {
-      console.error("Error fetching courses:", err);
-      setError("Failed to fetch courses. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchCoursesForUser();
-  }, [userCourse, userId, API_BASE_URL, API_URL]);
-
   const toggleDescription = (courseId) => {
     setExpandedDescriptions((prev) => ({
       ...prev,
@@ -64,14 +15,9 @@ const ClientCourse = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-[#f0f6f6]">
-        <div className="relative">
-          <div className="w-24 h-24 border-4 border-transparent border-b-[#4ecdc4] border-r-[#4ecdc4] rounded-full animate-spin"></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-16 h-16 border-4 border-transparent border-t-[#ff6b6b] border-l-[#ff6b6b] rounded-full animate-spin-slow"></div>
-          </div>
-        </div>
-      </div>
+      <div className="flex items-center justify-center h-screen bg-[#f0f6f6]">
+      <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#4ecdc4]"></div>
+    </div>
     );
   }
 

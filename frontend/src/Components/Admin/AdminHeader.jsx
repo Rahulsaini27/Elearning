@@ -65,19 +65,13 @@ function AdminHeader({ toggleSidebar }) {
         <div className="flex items-center ml-auto gap-4">
           <div className="flex items-center gap-3">
             {/* Notification Icons */}
-            <button className="relative p-2 text-[#2c3e50] hover:bg-[#f0f6f6] rounded-full">
-              <Bell size={20} />
-              <span className="absolute top-0 right-0 h-2 w-2 bg-[#ff6b6b] rounded-full"></span>
-            </button>
+          
 
             <button className="relative p-2 text-[#2c3e50] hover:bg-[#f0f6f6] rounded-full">
               <MessageCircle size={20} />
               <span className="absolute top-0 right-0 h-2 w-2 bg-[#4ecdc4] rounded-full"></span>
             </button>
 
-            <button className="p-2 text-[#2c3e50] hover:bg-[#f0f6f6] rounded-full">
-              <Settings size={20} />
-            </button>
 
             {/* Profile Section */}
             <div className="relative">

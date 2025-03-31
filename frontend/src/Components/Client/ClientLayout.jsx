@@ -5,6 +5,7 @@ import ClientHeader from "./ClientHeader";
 import ClientSidebar from "./ClientSidebar";
 
 function ClientLayout() {
+  
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const toggleSidebar = () => {

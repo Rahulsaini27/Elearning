@@ -5,7 +5,7 @@ import Swal from "sweetalert2";
 import ProjectContext from "../../Context/ProjectContext";
 
 import { format } from "date-fns";
-import { Play, Trash2, ChevronDown, ChevronUp, Eye } from 'lucide-react';
+import { Play, Trash2, ChevronDown, ChevronUp, Eye, PlayCircle, BookOpen, Upload, FileX, Calendar, FileText } from 'lucide-react';
 
 import '@vidstack/react/player/styles/default/theme.css';
 import '@vidstack/react/player/styles/default/layouts/video.css';
@@ -16,33 +16,15 @@ import { defaultLayoutIcons, DefaultVideoLayout } from '@vidstack/react/player/l
 export default function AdminVideo() {
   const { Toast } = useContext(AlertContext);
   const [videoLoading, setVideoLoading] = useState(false);
-  const [videos, setVideos] = useState([]);
   const [videoImages, setVideoImages] = useState({}); // Stores images per video
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { API_BASE_URL, API_URL, VIDEO_BASE_URL, SECURE_VIDEO_BASE_URL, course } = useContext(ProjectContext)
+  const { API_BASE_URL, API_URL, VIDEO_BASE_URL, SECURE_VIDEO_BASE_URL, course, videos, fetchVideos } = useContext(ProjectContext)
+
+  
 
   const admintoken = localStorage.getItem("admintoken");
-
-
-  const fetchVideos = async () => {
-    try {
-      const response = await axios.get(API_BASE_URL + API_URL + VIDEO_BASE_URL + "/all-video", {
-        headers: {
-          "Authorization": `Bearer ${admintoken}`,
-          "Content-Type": "application/json"
-        }
-      });
-      setVideos(response.data.videos);
-    } catch (err) {
-      console.error("Error fetching videos:", err);
-    }
-  };
-
-  useEffect(() => {
-    fetchVideos();
-  }, [])
 
 
   // Fetch images for videos
@@ -269,16 +251,18 @@ export default function AdminVideo() {
   };
   return (
     <>
-      <div className=" min-h-screen bg-[#F0F6F6] ">
+      <div className="min-h-screen bg-[#F0F6F6]">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-black">
+          <h2 className="text-xl font-semibold text-black relative">
             All Videos ({videos.length})
           </h2>
 
           {/* Upload Video Button */}
-          <div onClick={() => setUploadModalOpen(true)}
-            className="px-4 cursor-pointer py-2 text-white bg-[#4ecdc4] hover:bg-[#45b7aa]  transition duration-300 rounded-3xl "
+          <div
+            onClick={() => setUploadModalOpen(true)}
+            className="px-4 cursor-pointer py-2 text-white bg-[#4ecdc4] hover:bg-[#45b7aa] transition duration-300 rounded-3xl flex items-center gap-2 transform hover:scale-105"
           >
+            <Upload size={18} />
             Upload Video
           </div>
         </div>
@@ -289,13 +273,18 @@ export default function AdminVideo() {
           <div className="md:hidden">
             {videos.length > 0 ? (
               videos.map((video, index) => (
-                <div key={video._id} className="border-b border-gray-200 p-4">
+                <div key={video._id} className="border-b border-gray-200 p-4 hover:bg-[#e0f4f4] transition-all duration-300">
                   <div className="flex items-start gap-3">
-                    <img
-                      src={videoImages[video.title]}
-                      alt={video.title}
-                      className="w-20 h-20 object-cover rounded-md flex-shrink-0"
-                    />
+                    <div className="relative w-20 h-20 flex-shrink-0 overflow-hidden rounded-md group">
+                      <img
+                        src={videoImages[video.title]}
+                        alt={video.title}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                        <PlayCircle size={24} className="text-white" />
+                      </div>
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start">
                         <h3 className="font-medium text-gray-900 break-words pr-2">{video.title}</h3>
@@ -306,26 +295,33 @@ export default function AdminVideo() {
                           {expandedRows[video._id] ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                         </button>
                       </div>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 flex items-center gap-1">
+                        <BookOpen size={14} />
                         {video?.course?.title || "No course"}
                       </p>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                        <Calendar size={12} />
                         {video.createdAt ? format(new Date(video.createdAt), "MMM d, yyyy") : "N/A"}
                       </p>
                     </div>
                   </div>
 
                   {expandedRows[video._id] && (
-                    <div className="mt-3 pl-2">
-                      <h4 className="text-sm font-medium text-gray-700 mb-1">Description:</h4>
-                      <p className="text-sm text-gray-600 break-words whitespace-pre-line mb-4">
-                        {video.description || "No description available."}
-                      </p>
+                    <div className="mt-3 pl-2 animate-fadeIn overflow-hidden">
+                      <div className="bg-white bg-opacity-50 p-3 rounded-lg border-l-4 border-[#4ecdc4] shadow-sm">
+                        <h4 className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                          <FileText size={14} />
+                          Description:
+                        </h4>
+                        <p className="text-sm text-gray-600 break-words whitespace-pre-line mb-4">
+                          {video.description || "No description available."}
+                        </p>
+                      </div>
 
-                      <div className="flex gap-3 pt-2 border-t border-gray-100">
+                      <div className="flex gap-3 pt-2 mt-3">
                         <button
                           onClick={() => handlePlayVideo(video.title)}
-                          className="flex items-center gap-1 bg-purple-100 text-purple-700 px-3 py-1.5 rounded-md text-sm hover:bg-purple-200 transition-colors"
+                          className="flex items-center gap-1 bg-purple-100 text-purple-700 px-3 py-1.5 rounded-md text-sm hover:bg-purple-200 transition-all hover:shadow-md"
                         >
                           <Play size={16} />
                           Watch
@@ -333,7 +329,7 @@ export default function AdminVideo() {
 
                         <button
                           onClick={() => handleVideoDelete(video._id, video.title, video.course)}
-                          className="flex items-center gap-1 bg-red-100 text-red-700 px-3 py-1.5 rounded-md text-sm hover:bg-red-200 transition-colors"
+                          className="flex items-center gap-1 bg-red-100 text-red-700 px-3 py-1.5 rounded-md text-sm hover:bg-red-200 transition-all hover:shadow-md"
                         >
                           <Trash2 size={16} />
                           Delete
@@ -345,29 +341,30 @@ export default function AdminVideo() {
               ))
             ) : (
               <div className="text-center py-12">
+                <FileX size={48} className="mx-auto mb-4 text-gray-300" />
                 <p className="text-gray-500">No videos uploaded yet.</p>
               </div>
             )}
           </div>
 
           {/* Tablet and Desktop View (≥ 768px) - Table layout */}
-          <div className="hidden md:block overflow-hidden">
+          <div className="hidden md:block overflow-hidden rounded-xl">
             <div className="overflow-x-auto">
-              <table className="min-w-full border border-[#e0e0e0] divide-y divide-gray-200">
-                <thead className="bg-[#F0F6F6] ">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-[#e0f4f4]">
                   <tr>
-                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">#</th>
-                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Media</th>
-                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Video Details</th>
-                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">Description</th>
-                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Date</th>
-                    <th scope="col" className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Actions</th>
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider w-12 border-b-2 border-[#4ecdc4]">#</th>
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider w-20 border-b-2 border-[#4ecdc4]">Media</th>
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider border-b-2 border-[#4ecdc4]">Video Details</th>
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider hidden lg:table-cell border-b-2 border-[#4ecdc4]">Description</th>
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider w-32 border-b-2 border-[#4ecdc4]">Date</th>
+                    <th scope="col" className="px-3 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider w-24 border-b-2 border-[#4ecdc4]">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-[#F0F6F6] divide-y divide-gray-200">
                   {videos?.length > 0 ? (
                     videos?.map((video, index) => (
-                      <tr key={video._id} className="hover:bg-[#e0f4f4]  transition-colors">
+                      <tr key={video._id} className="hover:bg-[#e0f4f4] transition-colors duration-300">
                         {/* Number */}
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                           {index + 1}
@@ -375,11 +372,16 @@ export default function AdminVideo() {
 
                         {/* Thumbnail */}
                         <td className="px-3 py-4 whitespace-nowrap">
-                          <img
-                            src={videoImages[video.title]}
-                            alt={video.title}
-                            className="w-16 h-16 object-cover rounded-md"
-                          />
+                          <div className="relative w-16 h-16 overflow-hidden rounded-md group">
+                            <img
+                              src={videoImages[video.title]}
+                              alt={video.title}
+                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                            />
+                            <div className="absolute inset-0 bg-black bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                              <PlayCircle size={24} className="text-white" />
+                            </div>
+                          </div>
                         </td>
 
                         {/* Title and Course */}
@@ -388,8 +390,9 @@ export default function AdminVideo() {
                             <h3 className="text-sm font-medium text-gray-900 break-words">
                               {video.title}
                             </h3>
-                            <p className="text-sm text-gray-500 mt-1">
-                              Course: {video?.course?.title || "N/A"}
+                            <p className="text-sm text-gray-500 mt-1 flex items-center gap-1">
+                              <BookOpen size={14} />
+                              {video?.course?.title || "N/A"}
                             </p>
                             <p className="text-sm text-gray-500 mt-1 lg:hidden">
                               {truncateText(video.description, 100)}
@@ -399,37 +402,45 @@ export default function AdminVideo() {
 
                         {/* Description (hidden on medium screens) */}
                         <td className="px-3 py-4 whitespace-normal hidden lg:table-cell">
-                          <div className="max-w-md">
-                            <p className="text-sm text-gray-600 break-words line-clamp-3">
-                              {truncateText(video.description, 200)}
-                            </p>
-                            {video.description && video.description.length > 200 && (
-                              <button
-                                onClick={() => toggleRowExpand(video._id)}
-                                className="text-xs text-blue-600 hover:text-blue-800 mt-1 flex items-center"
-                              >
-                                {expandedRows[video._id] ? (
-                                  <>
-                                    <ChevronUp size={14} className="mr-1" /> Show less
-                                  </>
-                                ) : (
-                                  <>
-                                    <ChevronDown size={14} className="mr-1" /> Show more
-                                  </>
-                                )}
-                              </button>
-                            )}
-                            {expandedRows[video._id] && (
-                              <p className="text-sm text-gray-600 break-words mt-2  p-3 rounded-md">
-                                {video.description}
+                          <div className="max-w-md relative">
+                            <div className={`transition-all duration-500 ${expandedRows[video._id] ? 'opacity-0 h-0' : 'opacity-100'}`}>
+                              <p className="text-sm text-gray-600 break-words line-clamp-3  bg-opacity-50 p-2 rounded-lg">
+                                {truncateText(video.description, 200)}
                               </p>
+                              {video.description && video.description.length > 200 && (
+                                <button
+                                  onClick={() => toggleRowExpand(video._id)}
+                                  className="text-xs text-[#4ecdc4] hover:text-[#45b7aa] mt-1 flex items-center transition-all hover:pl-1"
+                                >
+                                  <ChevronDown size={16} className="mr-1 transition-transform duration-300 transform hover:translate-y-1" />
+                                  Show more
+                                </button>
+                              )}
+                            </div>
+
+                            {expandedRows[video._id] && (
+                              <div className="animate-slideDown  bg-opacity-50 p-3 rounded-lg border-l-4 border-[#4ecdc4] shadow-sm">
+                                <p className="text-sm text-gray-600 break-words">
+                                  {video.description}
+                                </p>
+                                <button
+                                  onClick={() => toggleRowExpand(video._id)}
+                                  className="text-xs text-[#4ecdc4] hover:text-[#45b7aa] mt-2 flex items-center transition-all hover:pl-1"
+                                >
+                                  <ChevronUp size={16} className="mr-1 transition-transform duration-300 transform hover:-translate-y-1" />
+                                  Show less
+                                </button>
+                              </div>
                             )}
                           </div>
                         </td>
 
                         {/* Date */}
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {video.createdAt ? format(new Date(video.createdAt), "MMM d, yyyy") : "N/A"}
+                          <div className="flex items-center gap-1">
+                            <Calendar size={14} />
+                            {video.createdAt ? format(new Date(video.createdAt), "MMM d, yyyy") : "N/A"}
+                          </div>
                         </td>
 
                         {/* Actions */}
@@ -437,14 +448,14 @@ export default function AdminVideo() {
                           <div className="flex items-center justify-center space-x-3">
                             <button
                               onClick={() => handlePlayVideo(video.title)}
-                              className="text-[#4ecdc4] hover:text-[#45b7aa] transition-colors"
+                              className="text-[#4ecdc4] hover:text-[#45b7aa] transition-all duration-300 transform hover:scale-110 hover:rotate-12"
                               title="Play video"
                             >
                               <Play size={22} />
                             </button>
                             <button
                               onClick={() => handleVideoDelete(video._id, video.title, video.course)}
-                              className="text-red-600 hover:text-red-800 transition-colors"
+                              className="text-red-600 hover:text-red-800 transition-all duration-300 transform hover:scale-110 hover:-rotate-12"
                               title="Delete video"
                             >
                               <Trash2 size={22} />
@@ -455,8 +466,9 @@ export default function AdminVideo() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="6" className="px-3 py-8 text-center text-gray-500">
-                        No videos uploaded yet.
+                      <td colSpan="6" className="px-3 py-12 text-center text-gray-500">
+                        <FileX size={48} className="mx-auto mb-4 text-gray-300" />
+                        <p>No videos uploaded yet.</p>
                       </td>
                     </tr>
                   )}
@@ -465,18 +477,18 @@ export default function AdminVideo() {
             </div>
           </div>
         </div>
+      </div>
 
 
-      </div >
       {/* upload model  */}
       {uploadModalOpen && (
         <div className="fixed z-[500] inset-0 bg-black/50 flex justify-center items-center p-4">
-          <div className="w-full max-w-3xl bg-[#f0f6f6] rounded-lg shadow-lg p-6 relative">
+          <div className="w-full max-w-xl bg-[#f0f6f6] rounded-lg shadow-lg p-6 relative">
             {/* Modal Header */}
             <div className="flex justify-between items-center mb-4 border-b pb-3 border-[#e0e0e0]">
               <h2 className="text-2xl font-bold text-[#2c3e50]">Upload Video</h2>
               <button
-                className="text-[#4ecdc4] hover:text-[#45b7aa] transition"
+                className="text-[#4ecdc4] cursor-pointer hover:text-[#45b7aa] transition"
                 onClick={closeUploadModal}
                 disabled={loading}
               >
@@ -616,7 +628,7 @@ export default function AdminVideo() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`mt-4 bg-[#4ecdc4] text-white py-2 px-4 rounded-md hover:bg-[#45b7aa] transition-colors ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+                  className={`mt-4 bg-[#4ecdc4] cursor-pointer text-white py-2 px-4 rounded-md hover:bg-[#45b7aa] transition-colors ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   {loading ? "Uploading..." : "Upload Video"}
                 </button>

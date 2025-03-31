@@ -20,7 +20,14 @@ const ClientProfile = () => {
     const navigate = useNavigate();
 
 
-    const { user } = useContext(ProjectContext)
+    const { user ,loading} = useContext(ProjectContext)
+    if (loading) {
+        return (
+          <div className="flex items-center justify-center h-screen bg-[#f0f6f6]">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#4ecdc4]"></div>
+          </div>
+        );
+      }
 
     const toggleCourseDescription = (courseId) => {
         setExpandedCourses(prev => ({
@@ -106,9 +113,9 @@ const ClientProfile = () => {
 
                             <div className="grid md:grid-cols-2 gap-6">
                                 {user?.enrolledCourses.map((course) => (
-                                    <div
+                                    <div onClick={() => navigate(`/client/course/${course._id}`)}
                                         key={course._id}
-                                        className="group relative transform transition-all duration-300 hover:-translate-y-2"
+                                        className="group cursor-pointer relative transform transition-all duration-300 hover:-translate-y-2"
                                     >
                                         {/* Subtle Shadow Effect */}
                                         <div className="absolute -inset-1 bg-[#4ecdc4]/20 rounded-2xl opacity-25 group-hover:opacity-50 transition duration-300 blur-md"></div>
@@ -161,12 +168,6 @@ const ClientProfile = () => {
                                                 </div>
 
                                                 {/* Progress Bar */}
-                                                <div className="w-full bg-[#e0e0e0] rounded-full h-1.5 mt-4">
-                                                    <div
-                                                        className="bg-[#4ecdc4] h-1.5 rounded-full"
-                                                        style={{ width: `${course.progress}%` }}
-                                                    ></div>
-                                                </div>
 
                                                 {/* Continue Learning Button */}
                                                 <button
@@ -216,4 +217,4 @@ const ClientProfile = () => {
     );
 };
 
-export default ClientProfile;
+export default ClientProfile;    

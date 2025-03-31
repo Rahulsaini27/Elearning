@@ -3,7 +3,7 @@ import { AlertContext } from "../../Context/AlertContext";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { Edit, Trash2, Video, ChevronDown, ChevronUp, Eye, Users, BookOpen } from 'lucide-react';
+import { Edit, Trash2, Video, ChevronDown, ChevronUp, Eye, Users, BookOpen, FileText, Plus, BookX } from 'lucide-react';
 import ProjectContext from "../../Context/ProjectContext";
 
 const AdminCourse = () => {
@@ -199,89 +199,97 @@ const AdminCourse = () => {
 
   return (
     <>
-      <div className="p-6 max-w-7xl mx-auto bg-[#F0F6F6] min-h-screen">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-4xl font-bold text-[#2c3e50]">Courses</h1>
-            <p className="text-[#7f8c8d]">Create and manage courses for your students.</p>
-          </div>
-          <button
-            className="flex items-center bg-[#4ecdc4] text-white px-5 py-2 rounded-lg 
-          hover:bg-[#45b7aa] transition-colors duration-300 shadow-md hover:shadow-lg"
+      <div className="min-h-screen bg-[#F0F6F6]">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-black relative">
+            All Courses ({course.length})
+          </h2>
+
+          {/* Add Course Button */}
+          <div
             onClick={() => setShowPopup(true)}
+            className="px-4 cursor-pointer py-2 text-white bg-[#4ecdc4] hover:bg-[#45b7aa] transition duration-300 rounded-3xl flex items-center gap-2 transform hover:scale-105"
           >
+            <Plus size={18} />
             Add Course
-          </button>
+          </div>
         </div>
 
-        <div className="w-full bg-[#F0F6F6] rounded-lg shadow-md overflow-hidden">
-          {/* Mobile View (< 768px) - Card-based list */}
+        {/* Course Cards Grid */}
+        <div className="w-full bg-[#F0F6F6] rounded-lg shadow-md">
+          {/* Mobile View (< 768px) - Card-based layout */}
           <div className="md:hidden">
             {course.length > 0 ? (
               course.map((item, index) => (
-                <div
-                  key={index}
-                  className="border-b border-[#e0e0e0] p-4 hover:bg-[#e0f4f4] transition-colors"
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-medium text-[#2c3e50]">{item.title}</h3>
-                      <div className="mt-1 flex items-center space-x-2">
-                        <span
-                          className={`px-2 py-0.5 text-xs font-semibold rounded-full ${item.status === "published"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-gray-100 text-gray-800"
-                            }`}
+                <div key={item._id} className="border-b border-gray-200 p-4 hover:bg-[#e0f4f4] transition-all duration-300">
+                  <div className="flex items-start gap-3">
+                    <div className="relative w-12 h-12 flex-shrink-0 overflow-hidden rounded-md bg-[#4ecdc4] flex items-center justify-center text-white font-bold">
+                      {item.title.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start">
+                        <h3 className="font-medium text-gray-900 break-words pr-2">{item.title}</h3>
+                        <button
+                          onClick={() => toggleRowExpand(item._id)}
+                          className="p-1 rounded-full hover:bg-[#e0f4f4] flex-shrink-0 mt-1"
                         >
+                          {expandedRows[item._id] ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                        </button>
+                      </div>
+                      <div className="flex items-center space-x-4 mt-1">
+                        <p className="text-xs text-gray-500 flex items-center gap-1">
+                          <Users size={14} />
+                          {item.assignedStudents.length} Students
+                        </p>
+                        <p className="text-xs text-gray-500 flex items-center gap-1">
+                          <BookOpen size={14} />
+                          {item.lessons} Lessons
+                        </p>
+                      </div>
+                      <div className="mt-1">
+                        <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${item.status === "published" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
+                          }`}>
                           {item.status}
                         </span>
                       </div>
                     </div>
-                    <button
-                      onClick={() => toggleRowExpand(item._id)}
-                      className="p-1 rounded-full hover:bg-[#f0f6f6]"
-                    >
-                      {expandedRows[item._id] ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                    </button>
-                  </div>
-
-                  <div className="mt-2 flex items-center text-sm text-[#7f8c8d] space-x-4">
-                    <div className="flex items-center">
-                      <Users size={16} className="mr-1" />
-                      <span>{item.students} Students</span>
-                    </div>
-                    <div className="flex items-center">
-                      <BookOpen size={16} className="mr-1" />
-                      <span>{item.lessons} Lessons</span>
-                    </div>
                   </div>
 
                   {expandedRows[item._id] && (
-                    <div className="mt-3">
-                      <p className="text-sm text-[#2c3e50] mb-4">
-                        {item.description || "No description available."}
-                      </p>
+                    <div className="mt-3 pl-2 animate-fadeIn overflow-hidden">
+                      <div className="bg-white bg-opacity-50 p-3 rounded-lg border-l-4 border-[#4ecdc4] shadow-sm">
+                        <h4 className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                          <FileText size={14} />
+                          Description:
+                        </h4>
+                        <p className="text-sm text-gray-600 break-words whitespace-pre-line mb-4">
+                          {item.description || "No description available."}
+                        </p>
+                      </div>
 
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="flex gap-3 pt-2 mt-3">
                         <button
-                          className="flex justify-center items-center bg-[#f0f6f6] text-[#2c3e50] px-3 py-2 rounded-md text-sm hover:bg-[#e0f4f4] transition-colors"
+                          onClick={() => editCourse(item)}
+                          className="flex items-center gap-1 bg-purple-100 text-purple-700 px-3 py-1.5 rounded-md text-sm hover:bg-purple-200 transition-all hover:shadow-md"
                         >
-                          <Edit size={16} className="mr-1" />
-                          <span>Edit</span>
+                          <Edit size={16} />
+                          Edit
                         </button>
+
                         <button
                           onClick={() => handleDelete(item._id)}
-                          className="flex justify-center items-center bg-[#ff6b6b]/10 text-[#ff6b6b] px-3 py-2 rounded-md text-sm hover:bg-[#ff6b6b]/20 transition-colors"
+                          className="flex items-center gap-1 bg-red-100 text-red-700 px-3 py-1.5 rounded-md text-sm hover:bg-red-200 transition-all hover:shadow-md"
                         >
-                          <Trash2 size={16} className="mr-1" />
-                          <span>Delete</span>
+                          <Trash2 size={16} />
+                          Delete
                         </button>
+
                         <button
-                          className="flex justify-center items-center bg-[#4ecdc4]/10 text-[#4ecdc4] px-3 py-2 rounded-md text-sm hover:bg-[#4ecdc4]/20 transition-colors"
+                          onClick={() => navigate(`/admin/Admin-course/videos/${item._id}`)}
+                          className="flex items-center gap-1 bg-blue-100 text-blue-700 px-3 py-1.5 rounded-md text-sm hover:bg-blue-200 transition-all hover:shadow-md"
                         >
-                          <Video size={16} className="mr-1" />
-                          <span>Videos</span>
+                          <Video size={16} />
+                          Videos
                         </button>
                       </div>
                     </div>
@@ -290,109 +298,128 @@ const AdminCourse = () => {
               ))
             ) : (
               <div className="text-center py-12">
-                <p className="text-[#7f8c8d]">No courses found.</p>
+                <BookX size={48} className="mx-auto mb-4 text-gray-300" />
+                <p className="text-gray-500">No courses available yet.</p>
               </div>
             )}
           </div>
 
           {/* Tablet and Desktop View (≥ 768px) - Table layout */}
-          <div className="hidden md:block">
+          <div className="hidden md:block overflow-hidden rounded-xl">
             <div className="overflow-x-auto">
-              <table className="min-w-full border border-[#e0e0e0] divide-y divide-[#e0e0e0] ">
-                <thead className="bg-[#F0F6F6] text-[#7f8c8d]">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-[#e0f4f4]">
                   <tr>
-                    <th className="px-2 py-3 text-left text-xs font-medium text-[#7f8c8d] uppercase tracking-wider">Sr no</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-[#7f8c8d] uppercase tracking-wider">Course</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-[#7f8c8d] uppercase tracking-wider hidden lg:table-cell">Description</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-[#7f8c8d] uppercase tracking-wider">Stats</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-[#7f8c8d] uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-[#7f8c8d] uppercase tracking-wider">Actions</th>
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider w-12 border-b-2 border-[#4ecdc4]">#</th>
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider border-b-2 border-[#4ecdc4]">Course Details</th>
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider hidden lg:table-cell border-b-2 border-[#4ecdc4]">Description</th>
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider w-32 border-b-2 border-[#4ecdc4]">Stats</th>
+                    <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider w-24 border-b-2 border-[#4ecdc4]">Status</th>
+                    <th scope="col" className="px-3 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider w-24 border-b-2 border-[#4ecdc4]">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="bg-[#F0F6F6] divide-y divide-[#e0e0e0]">
+                <tbody className="bg-[#F0F6F6] divide-y divide-gray-200">
                   {course.length > 0 ? (
                     course.map((item, index) => (
-                      <tr
-                        key={index}
-                        className="hover:bg-[#e0f4f4] transition-colors duration-200"
-                      >
-                        <td className="whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-[#2c3e50]">{index + 1}</div>
-                            </div>
+                      <tr key={item._id} className="hover:bg-[#e0f4f4] transition-colors duration-300">
+                        {/* Number */}
+                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                          {index + 1}
+                        </td>
+
+                        {/* Title and Videos */}
+                        <td className="px-3 py-4">
+                          <div className="flex flex-col">
+                            <h3 className="text-sm font-medium text-gray-900 break-words">
+                              {item.title}
+                            </h3>
+                            <p className="text-sm text-gray-500 mt-1 flex items-center gap-1">
+                              <Video size={14} />
+                              {item.videos.length} Videos
+                            </p>
                           </div>
                         </td>
-                        <td className="px-2 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-[#2c3e50]">{item.title}</div>
-                              <div className="text-xs py-2 text-[#7f8c8d]">{item.videos.length} Videos</div>
+
+                        {/* Description (hidden on medium screens) */}
+                        <td className="px-3 py-4 whitespace-normal hidden lg:table-cell">
+                          <div className="max-w-md relative">
+                            <div className={`transition-all duration-500 ${expandedRows[item._id] ? 'opacity-0 h-0' : 'opacity-100'}`}>
+                              <p className="text-sm text-gray-600 break-words line-clamp-3 bg-opacity-50 p-2 rounded-lg">
+                                {truncateText(item.description, 200)}
+                              </p>
+                              {item.description && item.description.length > 200 && (
+                                <button
+                                  onClick={() => toggleRowExpand(item._id)}
+                                  className="text-xs text-[#4ecdc4] hover:text-[#45b7aa] mt-1 flex items-center transition-all hover:pl-1"
+                                >
+                                  <ChevronDown size={16} className="mr-1 transition-transform duration-300 transform hover:translate-y-1" />
+                                  Show more
+                                </button>
+                              )}
                             </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-normal hidden lg:table-cell">
-                          <div className="text-sm text-[#2c3e50]">
-                            {truncateText(item.description, 150)}
-                            {item.description && item.description.length > 150 && (
-                              <button
-                                onClick={() => toggleRowExpand(item._id)}
-                                className="ml-1 text-xs text-[#4ecdc4] hover:text-[#45b7aa]"
-                              >
-                                {expandedRows[item._id] ? "Show less" : "Show more"}
-                              </button>
-                            )}
+
                             {expandedRows[item._id] && (
-                              <div className="mt-2 p-3  rounded-md">
-                                {item.description}
+                              <div className="animate-slideDown bg-opacity-50 p-3 rounded-lg border-l-4 border-[#4ecdc4] shadow-sm">
+                                <p className="text-sm text-gray-600 break-words">
+                                  {item.description}
+                                </p>
+                                <button
+                                  onClick={() => toggleRowExpand(item._id)}
+                                  className="text-xs text-[#4ecdc4] hover:text-[#45b7aa] mt-2 flex items-center transition-all hover:pl-1"
+                                >
+                                  <ChevronUp size={16} className="mr-1 transition-transform duration-300 transform hover:-translate-y-1" />
+                                  Show less
+                                </button>
                               </div>
                             )}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center space-x-4">
-                            <div className="flex items-center text-sm text-[#7f8c8d]">
-                              <Users size={16} className="mr-1" />
-                              <span>{item.assignedStudents.length}</span>
+
+                        {/* Stats */}
+                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <div className="flex flex-col space-y-2">
+                            <div className="flex items-center gap-1">
+                              <Users size={14} className="text-gray-400" />
+                              {item.assignedStudents.length} Students
                             </div>
-                            <div className="flex items-center text-sm text-[#7f8c8d]">
-                              <BookOpen size={16} className="mr-1" />
-                              <span>{item.lessons}</span>
+                            <div className="flex items-center gap-1">
+                              <BookOpen size={14} className="text-gray-400" />
+                              {item.lessons} Lessons
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${item.status === "published"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-gray-100 text-gray-800"
-                              }`}
-                          >
+
+                        {/* Status */}
+                        <td className="px-3 py-4 whitespace-nowrap">
+                          <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${item.status === "published" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
+                            }`}>
                             {item.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex justify-center space-x-3">
+
+                        {/* Actions */}
+                        <td className="px-3 py-4 whitespace-nowrap">
+                          <div className="flex items-center justify-center space-x-3">
                             <button
                               onClick={() => editCourse(item)}
-                              className="text-[#7f8c8d] cursor-pointer hover:text-[#2c3e50]"
+                              className="text-[#4ecdc4] hover:text-[#45b7aa] transition-all duration-300 transform hover:scale-110 hover:rotate-12"
                               title="Edit course"
                             >
-                              <Edit size={18} />
+                              <Edit size={22} />
                             </button>
                             <button
                               onClick={() => handleDelete(item._id)}
-                              className="text-[#ff6b6b] cursor-pointer hover:text-red-700"
+                              className="text-red-600 hover:text-red-800 transition-all duration-300 transform hover:scale-110 hover:-rotate-12"
                               title="Delete course"
                             >
-                              <Trash2 size={18} />
+                              <Trash2 size={22} />
                             </button>
                             <button
                               onClick={() => navigate(`/admin/Admin-course/videos/${item._id}`)}
-                              className="text-[#4ecdc4] cursor-pointer hover:text-[#45b7aa]"
+                              className="text-blue-500 hover:text-blue-700 transition-all duration-300 transform hover:scale-110 hover:rotate-12"
                               title="View course videos"
                             >
-                              <Video size={18} />
+                              <Video size={22} />
                             </button>
                           </div>
                         </td>
@@ -400,8 +427,9 @@ const AdminCourse = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="6" className="px-6 py-8 text-center text-[#7f8c8d]">
-                        No courses found.
+                      <td colSpan="6" className="px-3 py-12 text-center text-gray-500">
+                        <BookX size={48} className="mx-auto mb-4 text-gray-300" />
+                        <p>No courses available yet.</p>
                       </td>
                     </tr>
                   )}
@@ -415,14 +443,14 @@ const AdminCourse = () => {
 
       {ShowPopup && (
         <div className="fixed z-[500] inset-0 bg-black/50 flex justify-center items-center p-4">
-          <div className="w-full max-w-2xl bg-[#f0f6f6] rounded-lg shadow-lg p-6 relative">
+          <div className="w-full max-w-xl bg-[#f0f6f6] rounded-lg shadow-lg p-6 relative">
 
             {/* Modal Header */}
             <div className="flex justify-between items-center mb-4 border-b pb-3 border-[#e0e0e0]">
               <h2 className="text-2xl font-bold text-[#2c3e50]">Add Course</h2>
               <button
                 onClick={() => setShowPopup(false)}
-                className="text-[#4ecdc4] hover:text-[#45b7aa] transition"
+                className="text-[#4ecdc4] cursor-pointer hover:text-[#45b7aa] transition"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -577,7 +605,7 @@ const AdminCourse = () => {
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className="mt-4 bg-[#4ecdc4] text-white py-2 px-4 rounded-md hover:bg-[#45b7aa] transition-colors"
+                  className="mt-4 bg-[#4ecdc4] cursor-pointer text-white py-2 px-4 rounded-md hover:bg-[#45b7aa] transition-colors"
                 >
                   Upload Course
                 </button>
@@ -594,15 +622,23 @@ const AdminCourse = () => {
       {/* Edit Course Popup */}
       {courseEdit && selectedCourse && (
         <div className="fixed z-[500] inset-0 bg-black/50 flex justify-center items-center p-4">
-          <div className="w-full max-w-2xl bg-[#f0f6f6] rounded-lg shadow-lg p-6 relative">
+          <div className="w-full max-w-xl bg-[#f0f6f6] rounded-lg shadow-lg p-6 relative">
             {/* Modal Header */}
             <div className="flex justify-between items-center mb-4 border-b pb-3 border-[#e0e0e0]">
               <h2 className="text-2xl font-bold text-[#2c3e50]">Edit Course</h2>
               <button
                 onClick={() => setCourseEdit(false)}
-                className="text-[#4ecdc4] hover:text-[#45b7aa] transition"
+                className="text-[#4ecdc4] hover:text-[#45b7aa] cursor-pointer transition"
               >
-                ✖
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
 
@@ -699,7 +735,8 @@ const AdminCourse = () => {
                   onChange={(e) =>
                     setSelectedCourse({ ...selectedCourse, description: e.target.value })
                   }
-                  className="mt-1 block w-full p-2 border border-[#4ecdc4]/30 rounded-md shadow-sm focus:ring-[#4ecdc4] focus:border-[#4ecdc4]"
+
+                  className="mt-1  block w-full p-2 border border-[#4ecdc4]/30 rounded-md shadow-sm focus:ring-[#4ecdc4] focus:border-[#4ecdc4]"
                 />
               </div>
 
@@ -707,7 +744,7 @@ const AdminCourse = () => {
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className="mt-4 bg-[#4ecdc4] text-white py-2 px-4 rounded-md hover:bg-[#45b7aa] transition flex items-center"
+                  className="mt-4  cursor-pointer bg-[#4ecdc4] text-white py-2 px-4 rounded-md hover:bg-[#45b7aa] transition flex items-center"
                   disabled={loading}
                 >
                   {loading ? "Saving..." : "Save Changes"}

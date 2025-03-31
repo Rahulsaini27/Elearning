@@ -12,7 +12,7 @@ const AdminLogin = () => {
   const navigate = useNavigate();
 
   const { Toast } = useContext(AlertContext);
-  const { API_BASE_URL, API_URL, ADMIN_BASE_URL } = useContext(ProjectContext);
+  const { API_BASE_URL, API_URL, ADMIN_BASE_URL ,setAdminToken } = useContext(ProjectContext);
   const formRef = useRef(null);
 
   useEffect(() => {
@@ -39,6 +39,7 @@ const AdminLogin = () => {
       );
 
       localStorage.setItem("admintoken", data.admintoken);
+      setAdminToken(data.admintoken);
       setTimeout(() => navigate("/admin"), 2000);
 
       Toast.fire({ icon: "success", title: "Login Successfully" });

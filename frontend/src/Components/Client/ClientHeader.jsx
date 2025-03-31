@@ -81,11 +81,7 @@ function ClientHeader({ toggleSidebar }) {
         {/* Right Side Icons */}
         <div className="flex items-center ml-auto gap-4">
           <div className="flex items-center gap-3">
-            {/* Notifications */}
-            <button className="relative p-2 text-gray-800 hover:bg-gray-100 rounded-full">
-              <Bell size={20} />
-              <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
-            </button>
+            
 
             <button className="relative p-2 text-gray-800 hover:bg-gray-100 rounded-full">
               <MessageCircle size={20} />

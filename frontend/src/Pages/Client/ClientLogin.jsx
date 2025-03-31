@@ -9,7 +9,7 @@ import GalaxyBackground from "../../Components/UI/galaxybackground";
 
 const ClientLogin = () => {
   const { Toast } = useContext(AlertContext);
-  const { API_BASE_URL, API_URL, USER_BASE_URL } = useContext(ProjectContext);
+  const { API_BASE_URL, API_URL, USER_BASE_URL , setToken, setUserId } = useContext(ProjectContext);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -49,9 +49,13 @@ const ClientLogin = () => {
         return;
       }
 
-      localStorage.setItem("token", token);
-      localStorage.setItem("userId", userId);
-
+  
+      localStorage.setItem('token', token);
+      localStorage.setItem('userId', userId);
+      
+      // Update context state immediately
+      setToken(token);
+      setUserId(userId);
       navigate("/client");
     
       Toast.fire({ icon: "success", title: "Login Successfully" });
