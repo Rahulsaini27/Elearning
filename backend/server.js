@@ -7,14 +7,14 @@ require("dotenv").config();
 
 const app = express();
 
-// app.use(cors({
-//     origin: "https://course-frontend-nu.vercel.app",
-//     methods: ["GET", "POST", "PUT", "DELETE"],
-//     credentials: true,
-//     allowedHeaders: ["Authorization", "Content-Type"]
+app.use(cors({
+    origin: "https://course-frontend-nu.vercel.app",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+    allowedHeaders: ["Authorization", "Content-Type"]
 
-// }));
-app.use(cors())
+}));
+// app.use(cors())
 app.use(express.json());
 
 const UserRoute = require("./Routes/UserRoute");
