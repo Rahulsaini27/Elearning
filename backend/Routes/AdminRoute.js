@@ -1,5 +1,6 @@
 const express = require("express");
-const { adminLogin, registerAdmin, verifyToken } = require("../Controller/AdminController");
+const { adminLogin, registerAdmin, verifyToken, logoutAdmin } = require("../Controller/AdminController");
+const adminMiddleware = require("../Middlewares/AdminAuth");
 
 const router = express.Router();
 
@@ -7,6 +8,7 @@ const router = express.Router();
 router.post("/login", adminLogin);
 router.post("/register", registerAdmin);
 router.post("/verify-token", verifyToken);
+router.post("/logout", adminMiddleware, logoutAdmin);
 
 // Protected Route Example
 

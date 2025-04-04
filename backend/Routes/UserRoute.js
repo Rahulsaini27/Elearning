@@ -8,7 +8,8 @@ const { registerUser,
     deleteUser,
     toggleUserStatus,
     assignCourseToUser,
-    removeStudentFromCourse
+    removeStudentFromCourse,
+    logoutUser
 } = require("../Controller/UserController");
 
 const adminMiddleware = require("../Middlewares/AdminAuth");
@@ -18,6 +19,7 @@ const router = express.Router();
 // User authentication routes
 router.post("/login", loginUser);
 router.post("/verify-token", verifyToken);
+router.post("/logout", UserMiddleware || adminMiddleware,  logoutUser);
 
 // Protected Routes
 router.post("/register", adminMiddleware, registerUser);

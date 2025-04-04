@@ -10,11 +10,13 @@ import {
   BookOpen
 } from "lucide-react";
 import ProjectContext from "../../Context/ProjectContext";
+import { AlertContext } from "../../Context/AlertContext";
 
 function ClientSidebar({ isOpen, closeSidebar }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useContext(ProjectContext); // Ensure user context is handled safely
+  const { user, API_BASE_URL, API_URL, USER_BASE_URL } = useContext(ProjectContext); // Ensure user context is handled safely
+  const { Toast } = useContext(AlertContext);
 
 
   const menuItems = [
@@ -36,11 +38,33 @@ function ClientSidebar({ isOpen, closeSidebar }) {
   ];
 
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
+  const handleLogout = async (userId) => {
+    console.log(userId);
+    const token = localStorage.getItem("token");
+    try {
+      const response = await fetch(`${API_BASE_URL}${API_URL}${USER_BASE_URL}/logout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Send token for authentication
+        },
+      });
 
+      if (response.ok) {
+        // Clear local storage after successful logout
+        Toast.fire({ icon: "success", title: "Logout Successfully" });
+
+        localStorage.removeItem("token");
+        localStorage.removeItem("userId");
+
+        navigate("/login"); // Redirect to login page
+      } else {
+        console.error("Logout failed:", await response.json());
+      }
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
   return (
     <aside
       className={`fixed top-0 left-0 z-40 w-64 h-screen bg-white 
@@ -52,7 +76,7 @@ function ClientSidebar({ isOpen, closeSidebar }) {
       <div className="p-6 border-b border-[#e0e0e0]">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-[#4ecdc4] flex items-center justify-center text-white font-bold">
-          {user?.name?.charAt(0)?.toUpperCase() || "CL"}
+            {user?.name?.charAt(0)?.toUpperCase() || "CL"}
 
           </div>
           <div>
@@ -89,7 +113,7 @@ function ClientSidebar({ isOpen, closeSidebar }) {
         </div>
 
         <button
-          onClick={handleLogout}
+          onClick={() => handleLogout(user._id)}
           className="w-full mt-4 py-2 flex items-center justify-center gap-2 
             text-[#ff6b6b] hover:bg-[#ff6b6b]/10 rounded-lg transition-colors"
         >

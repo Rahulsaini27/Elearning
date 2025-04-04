@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   Menu,
   Search,
@@ -8,16 +8,43 @@ import {
   ChevronDown
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { AlertContext } from "../../Context/AlertContext";
+import ProjectContext from "../../Context/ProjectContext";
 
 function AdminHeader({ toggleSidebar }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    localStorage.removeItem("admintoken");
-    navigate("/adminlogin");
+  const { Toast } = useContext(AlertContext);
+
+  const { adminId, API_BASE_URL, API_URL, ADMIN_BASE_URL } = useContext(ProjectContext); // Ensure user context is handled safely
+  const handleLogout = async (adminId) => {
+    console.log(adminId);
+    const admintoken = localStorage.getItem("admintoken");
+    try {
+      const response = await fetch(`${API_BASE_URL}${API_URL}${ADMIN_BASE_URL}/logout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${admintoken}`, // Send token for authentication
+        },
+      });
+
+      if (response.ok) {
+        // Clear local storage after successful logout
+        Toast.fire({ icon: "success", title: "Logout Successfully" });
+        localStorage.removeItem("admintoken");
+        navigate("/adminlogin");
+      } else {
+        console.error("Logout failed:", await response.json());
+      }
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
   };
+
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -65,7 +92,7 @@ function AdminHeader({ toggleSidebar }) {
         <div className="flex items-center ml-auto gap-4">
           <div className="flex items-center gap-3">
             {/* Notification Icons */}
-          
+
 
             <button className="relative p-2 text-[#2c3e50] hover:bg-[#f0f6f6] rounded-full">
               <MessageCircle size={20} />
@@ -89,7 +116,8 @@ function AdminHeader({ toggleSidebar }) {
               {isProfileDropdownOpen && (
                 <div className="absolute right-0 top-full mt-2 w-48 bg-white shadow-lg rounded-lg border border-[#e0e0e0] py-2">
 
-                  <button onClick={handleLogout}
+                  <button
+                    onClick={() => handleLogout(adminId)}
                     className="w-full cursor-pointer text-left px-4 py-2 hover:bg-[#f0f6f6] text-sm text-[#ff6b6b]">
                     Logout
                   </button>

@@ -9,14 +9,16 @@ import {
 } from "lucide-react";
 import ProjectContext from "../../Context/ProjectContext";
 import { useNavigate } from "react-router-dom";
+import { AlertContext } from "../../Context/AlertContext";
 
 function ClientHeader({ toggleSidebar }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const { Toast } = useContext(AlertContext);
 
-  const { user } = useContext(ProjectContext); // Ensure user context is handled safely
+  const { user, API_BASE_URL, API_URL, USER_BASE_URL } = useContext(ProjectContext); // Ensure user context is handled safely
 
   useEffect(() => {
     const handleScroll = () => {
@@ -41,9 +43,34 @@ function ClientHeader({ toggleSidebar }) {
     return () => document.removeEventListener("click", handleClickOutside);
   }, [isProfileDropdownOpen]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
+
+  const handleLogout = async (userId) => {
+    console.log(userId);
+    const token = localStorage.getItem("token");
+    console.log(`${API_BASE_URL}${API_URL}${USER_BASE_URL}/logout`)
+    try {
+      const response = await fetch(`${API_BASE_URL}${API_URL}${USER_BASE_URL}/logout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Send token for authentication
+        },
+      });
+
+      if (response.ok) {
+        // Clear local storage after successful logout
+        Toast.fire({ icon: "success", title: "Logout Successfully" });
+
+        localStorage.removeItem("token");
+        localStorage.removeItem("userId");
+
+        navigate("/login"); // Redirect to login page
+      } else {
+        console.error("Logout failed:", await response.json());
+      }
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
   };
   return (
     <header
@@ -81,7 +108,7 @@ function ClientHeader({ toggleSidebar }) {
         {/* Right Side Icons */}
         <div className="flex items-center ml-auto gap-4">
           <div className="flex items-center gap-3">
-            
+
 
             <button className="relative p-2 text-gray-800 hover:bg-gray-100 rounded-full">
               <MessageCircle size={20} />
@@ -111,13 +138,13 @@ function ClientHeader({ toggleSidebar }) {
               {isProfileDropdownOpen && (
                 <div className="absolute right-0 top-full mt-2 w-48 bg-white shadow-lg rounded-lg border border-gray-200 py-2">
                   <button onClick={() => navigate("/client/my-profile")} className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-800">
-                   My Profile
+                    My Profile
                   </button>
                   <button className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-800">
                     Settings
                   </button>
                   <div className="border-t my-2 "></div>
-                  <button onClick={handleLogout}
+                  <button onClick={() => handleLogout(user._id)}
                     className="w-full cursor-pointer text-left px-4 py-2 hover:bg-gray-100 text-sm text-red-500">
                     Logout
                   </button>

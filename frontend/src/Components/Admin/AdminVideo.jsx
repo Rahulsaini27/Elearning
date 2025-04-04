@@ -179,11 +179,13 @@ export default function AdminVideo() {
       }
 
       );
+
       // 🔹 Step 2: Upload video & thumbnail to the generated URLs
       await Promise.all([
         axios.put(data.video.url, videoFile, { headers: { "Content-Type": videoFile.type } }),
         axios.put(data.thumbnail.url, thumbnailFile, { headers: { "Content-Type": thumbnailFile.type } })
       ]);
+      console.log(data)
 
       // 🔹 Step 3: Save video details in the database
       await axios.post(`${API_BASE_URL}${API_URL}${SECURE_VIDEO_BASE_URL}/save`, {

@@ -17,7 +17,7 @@ export function ProjectProvider({ children }) {
   const [admintoken, setAdminToken] = useState(localStorage.getItem("admintoken"));
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [userId, setUserId] = useState(localStorage.getItem("userId"));
-
+  const [adminId, setAdminId] = useState(localStorage.getItem("adminId"));
   const [videos, setVideos] = useState([]);
   const [course, setCourse] = useState([]);
   const [user, setUser] = useState(null);
@@ -227,6 +227,8 @@ export function ProjectProvider({ children }) {
         API_BASE_URL,
         API_URL,
         USER_BASE_URL,
+        adminId,
+        setAdminId,
         ADMIN_BASE_URL,
         VIDEO_BASE_URL,
         PASSWORD_BASE_URL,

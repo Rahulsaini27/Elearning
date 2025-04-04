@@ -32,40 +32,46 @@ const ClientLogin = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post(
-        API_BASE_URL + API_URL + USER_BASE_URL + "/login",
-        formData,
-        { headers: { "Content-Type": "application/json" } }
-      );
+        const response = await axios.post(
+            API_BASE_URL + API_URL + USER_BASE_URL + "/login",
+            formData,
+            { headers: { "Content-Type": "application/json" } }
+        );
 
-      const { token, userId, isActive } = response.data;
+        const { token, userId, isActive } = response.data;
 
-      if (isActive) {
-        Toast.fire({
-          icon: "error",
-          title: "Account Inactive",
-          text: "Your account is inactive. Please contact support.",
-        });
-        return;
-      }
+        // Prevent login if the account is inactive
+        if (isActive) {  
+            Toast.fire({
+                icon: "error",
+                title: "Account Inactive",
+                text: "Your account is inactive. Please contact support.",
+            });
+            setLoading(false);
+            return;
+        }
 
-  
-      localStorage.setItem('token', token);
-      localStorage.setItem('userId', userId);
-      
-      // Update context state immediately
-      setToken(token);
-      setUserId(userId);
-      navigate("/client");
-    
-      Toast.fire({ icon: "success", title: "Login Successfully" });
+        // Store token and user ID in localStorage
+        localStorage.setItem('token', token);
+        localStorage.setItem('userId', userId);
+
+        // Update context state
+        setToken(token);
+        setUserId(userId);
+
+        Toast.fire({ icon: "success", title: "Login Successfully" });
+
+        // Redirect to client dashboard
+        navigate("/client");
+        
     } catch (error) {
-      const errorMsg = error.response?.data?.msg || "Invalid credentials";
-      Toast.fire({ icon: "error", title: "Login Failed", text: errorMsg });
+        const errorMsg = error.response?.data?.msg || "Invalid credentials";
+        Toast.fire({ icon: "error", title: "Login Failed", text: errorMsg });
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
+
 
   return (
     <div className="relative min-h-screen flex items-center justify-center">

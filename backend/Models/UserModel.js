@@ -1,5 +1,4 @@
 
-
 const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema({
@@ -20,6 +19,12 @@ const UserSchema = new mongoose.Schema({
     isActive: { type: Boolean, default: true },
     lastLogin: { type: Date }, // Track last login date
     streak: { type: Number, default: 0 }, // Track login streak
+    //testing for session management
+    activeSession: {
+        token: String,
+        expiresAt: Date,
+    },
+
 }
     , {
         timestamps: true

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -8,6 +8,8 @@ import {
   HelpCircle,
   LogOut,
 } from "lucide-react";
+import ProjectContext from "../../Context/ProjectContext";
+import { AlertContext } from "../../Context/AlertContext";
 
 function AdminSidebar({ isOpen, closeSidebar }) {
   const navigate = useNavigate();
@@ -36,9 +38,35 @@ function AdminSidebar({ isOpen, closeSidebar }) {
     },
   ];
 
-  const handleLogout = () => {
-    localStorage.removeItem("admintoken");
-    navigate("/adminlogin");
+
+
+
+  const { Toast } = useContext(AlertContext);
+
+  const { adminId, API_BASE_URL, API_URL, ADMIN_BASE_URL } = useContext(ProjectContext); // Ensure user context is handled safely
+  const handleLogout = async (adminId) => {
+    console.log(adminId);
+    const admintoken = localStorage.getItem("admintoken");
+    try {
+      const response = await fetch(`${API_BASE_URL}${API_URL}${ADMIN_BASE_URL}/logout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${admintoken}`, // Send token for authentication
+        },
+      });
+
+      if (response.ok) {
+        // Clear local storage after successful logout
+        Toast.fire({ icon: "success", title: "Logout Successfully" });
+        localStorage.removeItem("admintoken");
+        navigate("/adminlogin");
+      } else {
+        console.error("Logout failed:", await response.json());
+      }
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
   };
 
   return (
@@ -67,8 +95,8 @@ function AdminSidebar({ isOpen, closeSidebar }) {
             to={item.link}
             key={index}
             className={`flex items-center gap-3 p-3 rounded-lg px-4 transition-colors duration-200 
-              ${location.pathname === item.link 
-                ? "bg-[#4ecdc4]/10 text-[#4ecdc4]" 
+              ${location.pathname === item.link
+                ? "bg-[#4ecdc4]/10 text-[#4ecdc4]"
                 : "hover:bg-[#f0f6f6] text-[#2c3e50]"}`}
           >
             {item.icon}
@@ -88,9 +116,9 @@ function AdminSidebar({ isOpen, closeSidebar }) {
         </div>
 
         <button
-          onClick={handleLogout}
+          onClick={() => handleLogout(adminId)}
           className="w-full mt-4 py-2 flex items-center justify-center gap-2 
-            text-[#ff6b6b] hover:bg-[#ff6b6b]/10 rounded-lg transition-colors"
+            text-[#ff6b6b] hover:bg-[#ff6b6b]/10 rounded-lg transition-colors cursor-pointer"
         >
           <LogOut size={18} />
           <span className="text-sm font-medium">Logout</span>

@@ -14,14 +14,52 @@ exports.adminLogin = async (req, res) => {
     const isMatch = await bcrypt.compare(password, admin.password);
     if (!isMatch) return res.status(400).json({ msg: "Invalid credentials" });
 
-    const admintoken = jwt.sign({ id: admin._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
+    const currentTime = new Date();
+
+    // Check if already logged in
+    if (admin.activeSession?.admintoken && admin.activeSession.expiresAt > currentTime) {
+      return res.status(403).json({ msg: "You are already logged in on another device." });
+    }
+
+    // Generate token
+    const admintoken = jwt.sign({ adminId: admin._id }, process.env.JWT_SECRET, {
+      expiresIn: "3h",
     });
 
-    res.json({ admintoken });
+    // Store active session
+    admin.activeSession = {
+      admintoken,
+      expiresAt: new Date(Date.now() + 3 * 60 * 60 * 1000), // Expires in 3 hours
+    };
+    await admin.save();
+
+    res.json({ admintoken , adminId: admin._id });
   } catch (error) {
     console.error(error);
     res.status(500).json({ msg: "Server error" });
+  }
+};
+
+
+exports.logoutAdmin = async (req, res) => {
+  if (!req.admin || !req.admin.adminId) {
+    return res.status(401).json({ msg: "Unauthorized request" });
+  }
+
+  const { adminId } = req.admin;
+
+  try {
+    const admin = await Admin.findById(adminId);
+    if (!admin) return res.status(404).json({ msg: "Admin not found" });
+
+    // Clear active session
+    admin.activeSession = null;
+    await admin.save();
+
+    res.json({ msg: "Logout successful" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Internal Server Error" });
   }
 };
 

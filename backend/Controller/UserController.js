@@ -12,32 +12,40 @@ exports.loginUser = async (req, res) => {
 
     try {
         const user = await User.findOne({ email });
-        if (!user) return res.status(400).json({ msg: "User does not exists" });
+        if (!user) return res.status(400).json({ msg: "User does not exist" });
 
         if (!user.isActive) return res.status(403).json({ msg: "Your account is inactive. Please contact admin." });
 
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(400).json({ msg: "Your Password is wrong" });
+        if (!isMatch) return res.status(400).json({ msg: "Your password is wrong" });
 
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+        // Generate new JWT token
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "3h" });
 
+        // Set expiration time (3 hours from now)
+        const expiresAt = new Date();
+        expiresAt.setHours(expiresAt.getHours() + 3);
+        // Invalidate previous session (auto logout previous device)
+        user.activeSession = { token, expiresAt };
 
-        const today = new Date();
+        // Update login streak
+        const currentTime = new Date();
         if (user.lastLogin) {
             const lastLoginDate = new Date(user.lastLogin);
-            const diffInDays = Math.floor((today - lastLoginDate) / (1000 * 60 * 60 * 24));
+            const diffInDays = Math.floor((currentTime - lastLoginDate) / (1000 * 60 * 60 * 24));
 
             if (diffInDays === 1) {
-                user.streak += 1; // Increase streak if they logged in consecutively
+                user.streak += 1;
             } else if (diffInDays > 1) {
-                user.streak = 1; // Reset streak if they missed a day
+                user.streak = 1;
             }
         } else {
-            user.streak = 1; // First-time login sets streak to 1
+            user.streak = 1;
         }
 
-        user.lastLogin = today; // Update last login time
+        user.lastLogin = currentTime;
         await user.save();
+
         res.json({ token, userId: user._id });
 
     } catch (err) {
@@ -45,6 +53,26 @@ exports.loginUser = async (req, res) => {
         res.status(500).json({ msg: "Internal Server Error" });
     }
 };
+// Logout User
+exports.logoutUser = async (req, res) => {
+    const { userId } = req.user;
+
+    try {
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ msg: "User not found" });
+
+        // Clear active session
+        user.activeSession = null;
+        await user.save();
+
+        res.json({ msg: "Logout successful" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ msg: "Internal Server Error" });
+    }
+};
+
+
 
 // Verify User Token
 exports.verifyToken = (req, res) => {
@@ -155,7 +183,7 @@ exports.getAllUsers = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
     try {
-        const { password,  ...updateFields } = req.body;
+        const { password, ...updateFields } = req.body;
 
         // ✅ If updating password, hash it
         if (password) {
