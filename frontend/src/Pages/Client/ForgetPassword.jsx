@@ -1,12 +1,14 @@
+// ForgetPassword.jsx
 import React, { useContext, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { AlertContext } from "../../Context/AlertContext";
-import { useNavigate } from "react-router-dom";
+// Removed Link import as it's replaced by button
+import { useNavigate } from "react-router-dom"; // Keep useNavigate if needed for other navigations
 import gsap from "gsap";
-import GalaxyBackground from "../../Components/UI/galaxybackground";
 import ProjectContext from "../../Context/ProjectContext";
 
-function ForgetPassword() {
+// Receive onClose and onSwitchForm props from the parent (ClientUI)
+function ForgetPassword({ onClose, onSwitchForm }) {
   const [formData, setFormData] = useState({ email: "", otp: "", newPassword: "" });
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -16,7 +18,7 @@ function ForgetPassword() {
 
   const { API_BASE_URL, API_URL, PASSWORD_BASE_URL } = useContext(ProjectContext)
 
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Still needed for context
   const formRef = useRef(null);
 
   useEffect(() => {
@@ -26,10 +28,9 @@ function ForgetPassword() {
       { opacity: 1, y: 0, duration: 1, ease: "power2.out" }
     );
   }, []);
-  // Validate email format
+
   const isValidEmail = (email) => /\S+@\S+\.\S+/.test(email);
 
-  // Handle input changes
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError(""); // Reset error when user types
@@ -40,7 +41,6 @@ function ForgetPassword() {
     e.preventDefault();
     if (!isValidEmail(formData.email)) {
       Toast.fire({ icon: "error", title: "Please enter a valid email" });
-      // setError("Please enter a valid email");
       return;
     }
     setLoading(true);
@@ -102,6 +102,7 @@ function ForgetPassword() {
     e.preventDefault();
     if (!formData.newPassword || formData.newPassword.length < 6) {
       setError("Password must be at least 6 characters");
+      Toast.fire({icon: "error", title: "Password must be at least 6 characters"});
       return;
     }
 
@@ -115,7 +116,9 @@ function ForgetPassword() {
 
       if (response.data.success) {
         Toast.fire({ icon: "success", title: "Password Reset Successfully!" });
-        navigate("/login");
+        // Close modal and switch back to login modal
+        onClose();
+        onSwitchForm("login"); // Navigate back to the login form
       } else {
         setError(response.data.message);
       }
@@ -129,11 +132,9 @@ function ForgetPassword() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center px-4">
-      <GalaxyBackground />
-      <div ref={formRef} className="relative bg-opacity-10 bg-white/10 backdrop-blur-lg shadow-lg rounded-xl p-8 max-w-sm w-full border border-white/20">
+    // Removed min-h-screen and centering styles, and modal background/border styles as they are now handled by Modal.jsx
+    <div ref={formRef} className="relative"> {/* formRef now applies to this inner div for GSAP animation */}
         <div className="text-center">
-          <img className="h-16 mx-auto" src="https://i.ibb.co/hRzkkDJV/Logo-white.png" alt="Logo" />
           <h3 className="mt-4 text-2xl font-semibold text-white">
             {step === 1 ? "Forgot Password" : step === 2 ? "Verify OTP" : "Reset Password"}
           </h3>
@@ -144,31 +145,31 @@ function ForgetPassword() {
 
         {step === 1 && (
           <form onSubmit={handleSendOTP} className="mt-6">
-            <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email Address" className="w-full px-4 py-2 rounded-lg bg-gray-900 text-white border border-gray-700 focus:ring-2 focus:ring-purple-400" required />
-            <button type="submit" disabled={!isValidEmail(formData.email) || loading} className="mt-4 w-full px-6 py-2 text-white bg-blue-500 rounded-lg shadow-md hover:bg-blue-400 transition-all">{loading ? "Sending..." : "Send OTP"}</button>
+            <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email Address" className="w-full px-4 py-2 rounded-lg bg-gray-900 text-white placeholder-gray-500 border border-gray-700 focus:ring-2 focus:ring-blue-500" required /> {/* Changed focus:ring-indigo-400 to blue-500 */}
+            <button type="submit" disabled={!isValidEmail(formData.email) || loading} className="mt-4 w-full px-6 py-2 text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 transition-all">{loading ? "Sending..." : "Send OTP"}</button> {/* Changed bg-indigo-600 to blue-600 */}
           </form>
         )}
 
         {step === 2 && (
           <form onSubmit={handleVerifyOTP} className="mt-6">
-            <input type="text" name="otp" value={formData.otp} onChange={handleChange} placeholder="Enter OTP" className="w-full px-4 py-2 rounded-lg bg-gray-900 text-white border border-gray-700 focus:ring-2 focus:ring-purple-400" required />
-            <button type="submit" disabled={!formData.otp || loading} className="mt-4 w-full px-6 py-2 text-white bg-green-500 rounded-lg shadow-md hover:bg-green-400 transition-all">{loading ? "Verifying..." : "Verify OTP"}</button>
+            <input type="text" name="otp" value={formData.otp} onChange={handleChange} placeholder="Enter OTP" className="w-full px-4 py-2 rounded-lg bg-gray-900 text-white placeholder-gray-500 border border-gray-700 focus:ring-2 focus:ring-blue-500" required /> {/* Changed focus:ring-indigo-400 to blue-500 */}
+            <button type="submit" disabled={!formData.otp || loading} className="mt-4 w-full px-6 py-2 text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 transition-all">{loading ? "Verifying..." : "Verify OTP"}</button> {/* Changed bg-emerald-600 to blue-600 */}
           </form>
         )}
 
         {step === 3 && (
           <form onSubmit={handleResetPassword} className="mt-6">
-            <input type="password" name="newPassword" value={formData.newPassword} onChange={handleChange} placeholder="New Password" className="w-full px-4 py-2 rounded-lg bg-gray-900 text-white border border-gray-700 focus:ring-2 focus:ring-purple-400" required />
-            <button type="submit" disabled={formData.newPassword.length < 6 || loading} className="mt-4 w-full px-6 py-2 text-white bg-purple-500 rounded-lg shadow-md hover:bg-purple-400 transition-all">{loading ? "Resetting..." : "Reset Password"}</button>
+            <input type="password" name="newPassword" value={formData.newPassword} onChange={handleChange} placeholder="New Password" className="w-full px-4 py-2 rounded-lg bg-gray-900 text-white placeholder-gray-500 border border-gray-700 focus:ring-2 focus:ring-blue-500" required /> {/* Changed focus:ring-indigo-400 to blue-500 */}
+            <button type="submit" disabled={formData.newPassword.length < 6 || loading} className="mt-4 w-full px-6 py-2 text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 transition-all">{loading ? "Resetting..." : "Reset Password"}</button> {/* Changed bg-indigo-600 to blue-600 */}
           </form>
         )}
 
         {error && <p className="mt-2 text-red-600 text-center">{error}</p>}
 
         <div className="mt-4 text-center">
-          <a href="/login" className="text-purple-300 hover:underline">Back to Login</a>
+          {/* Changed Link to button with onClick to switch modal */}
+          <button type="button" onClick={() => onSwitchForm("login")} className="text-blue-300 hover:underline">Back to Login</button> {/* Changed text-indigo-300 to blue-300 */}
         </div>
-      </div>
     </div>
   );
 }

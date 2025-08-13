@@ -7,14 +7,14 @@ require("dotenv").config();
 
 const app = express();
 
-app.use(cors({
-    origin: "https://course-frontend-nu.vercel.app",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
-    allowedHeaders: ["Authorization", "Content-Type"]
+// app.use(cors({
+//     origin: "https://course-frontend-nu.vercel.app",
+//     methods: ["GET", "POST", "PUT", "DELETE"],
+//     credentials: true,
+//     allowedHeaders: ["Authorization", "Content-Type"]
 
-}));
-// app.use(cors())
+// }));
+app.use(cors())
 app.use(express.json());
 
 const UserRoute = require("./Routes/UserRoute");
@@ -23,6 +23,7 @@ const uploadRoute = require("./Routes/uploadRoutes");
 const passwordRoute = require("./Routes/passwordRoute");
 const courseRoutes = require("./Routes/courseRoutes");
 const videoRoute = require("./Routes/videoRoutes");
+const assignmentRoutes = require("./Routes/assignmentRoutes"); // NEW
 
 app.use(express.static("public"));
 app.use("/api/user", UserRoute);
@@ -31,6 +32,7 @@ app.use("/api/videos", uploadRoute);
 app.use("/api/courses", courseRoutes);
 app.use("/api/password", passwordRoute);
 app.use("/api/secureVideos", videoRoute);
+app.use("/api/assignments", assignmentRoutes); // NEW: Use assignment routes
 
 app.get("/", (req, res) => {
     res.send("This backend is running!");

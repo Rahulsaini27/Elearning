@@ -2,7 +2,14 @@ const { GetObjectCommand, S3Client, ListObjectsV2Command, DeleteObjectCommand, D
 const Video = require("../Models/Video");
 const { getUploadUrl } = require("../services/s3Service");
 const Course = require("../Models/Course");
-
+const Assignment = require("../Models/Assignment");
+const s3 = new S3Client({
+    region: process.env.AWS_REGION,
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    },
+});
 exports.generateUploadUrls = async (req, res) => {
     try {
         const { title, videoType, thumbnailType } = req.body;
@@ -51,7 +58,10 @@ exports.saveVideo = async (req, res) => {
 
 exports.getAllVideos = async (req, res) => {
     try {
-        const videos = await Video.find().populate("course", "title") // Populate course name
+        // Populate assignment details as well
+        const videos = await Video.find()
+            .populate("course", "title") // Populate course name
+            .populate("assignment") // NEW: Populate assignment details
             .sort({ createdAt: -1 }); // Sort by newest first
         res.status(200).json({ success: true, videos });
     } catch (error) {
@@ -60,61 +70,62 @@ exports.getAllVideos = async (req, res) => {
     }
 };
 
-const s3 = new S3Client({
-    region: process.env.AWS_REGION,
-    credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    },
-});
-
 
 exports.deleteVideo = async (req, res) => {
     try {
-        const { id } = req.params; // ✅ Video ID from URL
-        const { title, courseId } = req.query; // ✅ Extract title & courseId from query
-        // 🔹 Find the video record
-        const video = await Video.findById(id);
+        const { id: videoId } = req.params; 
+        const video = await Video.findById(videoId).populate('assignment');
         if (!video) {
-            return res.status(404).json({ success: false, message: "Video not found" });
+            return res.status(404).json({ success: false, message: "Video not found in database." });
         }
-
-        // 🔹 Find the course and remove the video from its videos array
-        const course = await Course.findById(courseId);
-        if (!course) {
-            return res.status(404).json({ success: false, message: "Course not found" });
-        }
-
-        // 🔹 Remove the video ID from the course's videos array
-        course.videos = course.videos.filter(videoId => videoId.toString() !== id);
-        await course.save();
 
         const bucketName = process.env.AWS_BUCKET_NAME;
+        const s3DeletePromises = [];
 
-        // Extract the object key from the full URL
-        const videoKey = video.videoUrl.split('.com/')[1];
-        const thumbnailKey = video.thumbnailUrl.split('.com/')[1];
-        if (!videoKey || !thumbnailKey) {
-            return res.status(400).json({ success: false, message: "Invalid video or thumbnail URL" });
+        const getVideoKey = (url) => url ? url.split('.com/')[1] : null;
+
+        const videoKey = getVideoKey(video.videoUrl);
+        const thumbnailKey = getVideoKey(video.thumbnailUrl);
+
+        if (videoKey) {
+            s3DeletePromises.push(s3.send(new DeleteObjectCommand({ Bucket: bucketName, Key: videoKey })));
         }
-        await Promise.all([
-            s3.send(new DeleteObjectCommand({ Bucket: bucketName, Key: videoKey })),
-            s3.send(new DeleteObjectCommand({ Bucket: bucketName, Key: thumbnailKey }))
-        ]);
+        if (thumbnailKey) {
+            s3DeletePromises.push(s3.send(new DeleteObjectCommand({ Bucket: bucketName, Key: thumbnailKey })));
+        }
+ 
+        // 3. Delete Associated Assignment (if any)
+        if (video.assignment) {
+            const assignmentKey = getVideoKey(video.assignment.assignmentUrl);
+            if (assignmentKey) {
+                s3DeletePromises.push(s3.send(new DeleteObjectCommand({ Bucket: bucketName, Key: assignmentKey })));
+            }
+            // Delete assignment document from DB
+            await Assignment.findByIdAndDelete(video.assignment._id);
+        }
 
+        // Wait for all S3 deletions to complete
+        await Promise.all(s3DeletePromises);
 
-        // 🔹 Delete the video from MongoDB
-        await Video.findByIdAndDelete(id);
+        // 4. Remove video reference from its Course document
+        if (video.course) {
+            await Course.findByIdAndUpdate(
+                video.course,
+                { $pull: { videos: videoId } },
+                { new: true }
+            );
+        }
 
-        res.status(200).json({ success: true, message: `Video "${title}" deleted successfully from course "${course.title}"` });
+        // 5. Delete the Video document from MongoDB
+        await Video.findByIdAndDelete(videoId);
+
+        res.status(200).json({ success: true, message: "Video, thumbnail, and associated assignment deleted successfully!" });
 
     } catch (error) {
-        console.error("Error deleting video:", error);
-        res.status(500).json({ success: false, message: "Internal Server Error" });
+        console.error("Error deleting video and associated content:", error);
+        res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
     }
 };
-
-
 //watch url 
 exports.getImageUrl = async (req, res) => {
     const { filename } = req.query;

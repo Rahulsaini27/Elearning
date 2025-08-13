@@ -18,6 +18,10 @@ import ClientTest from "./Components/Client/ClientTest";
 import AdminDashboard from "./Components/Admin/AdminDashboard";
 import AdminVideo from "./Components/Admin/AdminVideo";
 import ClientProfile from "./Components/Client/ClientProfile";
+import AdminAssignments from "./Components/Admin/AdminAssignments";
+import ClientAssignmentResults from "./Components/Client/ClientAssignmentResults";
+import AdminGenerateAssignment from "./Components/Admin/AdminGenerateAssignment";
+import ClientSignup from "./Pages/Client/ClientSignup";
 
 function App() {
 
@@ -35,6 +39,10 @@ function App() {
       element: <ClientUI />,
     },
     {
+      path: "/signup",
+      element: <ClientSignup />
+    },
+    {
       path: "/client",
       element: <ProtectedRoute />, // Protect all client routes
       children: [
@@ -47,6 +55,8 @@ function App() {
             { path: "my-profile", element: <ClientProfile /> },
 
             { path: "course/:courseId", element: <LearningVideo /> },
+                        { path: "assignment-results", element: <ClientAssignmentResults /> }, // NEW: Route for assignment results
+
             { path: "upload-video", element: <ClientTest /> },
 
           ],
@@ -87,6 +97,14 @@ function App() {
             {
               path: "Admin-course/videos/:courseId",
               element: <Coursevideo />
+            },
+            { // --- NEW ROUTE ---
+              path: "assignments", // This matches the link in AdminSidebar
+              element: <AdminAssignments />
+            },
+            { // --- NEW ROUTE FOR AI GENERATION ---
+              path: "generate-assignment", 
+              element: <AdminGenerateAssignment />
             }
             
           ],
