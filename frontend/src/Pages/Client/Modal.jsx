@@ -1,4 +1,4 @@
-// components/Modal.jsx
+
 import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react'; // Assuming Lucide-React is installed
 import gsap from 'gsap'; // Assuming GSAP is installed
@@ -44,17 +44,17 @@ const Modal = ({ isOpen, onClose, children }) => {
     <div
       ref={modalOverlayRef}
       // Use pointer-events-none when closing to prevent clicks during exit animation
-      className={`fixed inset-0 bg-black/25 bg-opacity-70 flex items-center justify-center z-[1000] p-4 ${isOpen ? '' : 'pointer-events-none'}`}
+      className={`fixed inset-0 bg-black/60 flex items-center justify-center z-[1000] p-4 ${isOpen ? '' : 'pointer-events-none'}`}
       onClick={handleOverlayClick}
     >
       <div
         ref={modalContentRef}
-        className="relative bg-opacity-10 bg-white/10 backdrop-blur-lg shadow-lg rounded-xl p-8 max-w-sm w-full border border-white/20"
+        className="relative bg-white shadow-xl rounded-xl p-8 max-w-sm w-full" // MODIFIED: Changed background to white and adjusted shadow
       >
         {/* Close button positioned top-right */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-300 hover:text-white transition-colors z-10"
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 transition-colors z-10" // MODIFIED: Changed color for visibility on white
           aria-label="Close modal"
         >
           <X className="h-6 w-6" />

@@ -44,7 +44,7 @@ const ProtectedAdminRoute = () => {
 
   if (loading) return ;
 
-  return isAuthenticated ? <Outlet /> : <Navigate to="/adminlogin" replace />;
+  return isAuthenticated ? <Outlet /> : <Navigate to="/" replace />;
 };
 
 export default ProtectedAdminRoute;

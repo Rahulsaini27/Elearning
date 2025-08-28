@@ -14,39 +14,16 @@ const PDFDocument = require('pdfkit'); // For PDF generation
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Declare model variable globally, but assign it after finding an available model
+// --- CORRECTED: Directly initialize a specific, free-tier compatible model ---
 let textGenModel;
-
-// --- NEW: Function to find a suitable model on startup ---
-async function initializeGeminiModel() {
-    try {
-        const { models } = await genAI.listModels();
-        // Find a model that supports 'generateContent' and is suitable for text
-        const suitableModel = models.find(model =>
-            model.supportedGenerationMethods.includes("generateContent") &&
-            (model.name.includes("gemini-1.5-flash") || model.name.includes("text-bison")) // Prioritize gemini-1.5-flash or text-bison variants
-        );
-
-        if (suitableModel) {
-            textGenModel = genAI.getGenerativeModel({ model: suitableModel.name });
-            console.log(`Gemini AI initialized with model: ${suitableModel.name}`);
-        } else {
-            console.error("No suitable Gemini model found for generateContent. Using fallback 'gemini-1.5-flash'.");
-            // Fallback to gemini-1.5-flash if no other is found, hoping it works
-            textGenModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        }
-    } catch (error) {
-        console.error("Error listing or initializing Gemini models:", error);
-        console.error("Attempting to use 'gemini-1.5-flash' as a fallback. Please ensure your API key and region support it.");
-        // Fallback to gemini-1.5-flash if listing fails entirely
-        textGenModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    }
+try {
+    // gemini-1.5-flash is a powerful and cost-effective model suitable for the free tier.
+    textGenModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+} catch (error) {
+    console.error("CRITICAL: Failed to initialize Gemini AI. Please check your API key and project setup.", error);
+    // Set model to null so that any attempts to use it will fail gracefully.
+    textGenModel = null;
 }
-
-// Call this function when the application starts
-initializeGeminiModel();
-// END NEW: Function to find a suitable model on startup
-
 
 // Student API: Generate upload URL for submission PDF
 
@@ -239,7 +216,7 @@ exports.getAdminAssignmentOverview = async (req, res) => {
                 for (const student of studentsAssignedToCourse) {
                     const submissionKey = `${assignment._id.toString()}-${student._id.toString()}`;
                     const submission = submissionMap.get(submissionKey);
-                    
+
                     assignmentInfo.studentStatuses.push({
                         studentId: student._id,
                         studentName: student.name,
@@ -254,8 +231,8 @@ exports.getAdminAssignmentOverview = async (req, res) => {
                     });
                 }
             } else {
-                 // If no students assigned to the course, log or handle as per policy.
-                 // For now, it means no one is expected to submit.
+                // If no students assigned to the course, log or handle as per policy.
+                // For now, it means no one is expected to submit.
             }
             overview.push(assignmentInfo);
         }
@@ -275,7 +252,7 @@ exports.getAdminAssignmentOverview = async (req, res) => {
 
 exports.getAssignmentFile = async (req, res) => {
     const { assignmentUrl } = req.query; // Frontend will send the full S3 URL
-console.log("Fetching assignment file from URL:", assignmentUrl);
+    console.log("Fetching assignment file from URL:", assignmentUrl);
 
     if (!assignmentUrl) {
         return res.status(400).json({ success: false, message: "Assignment URL is required." });
@@ -320,7 +297,7 @@ console.log("Fetching assignment file from URL:", assignmentUrl);
                 return res.status(404).json({ success: false, message: "Assignment file not found." });
             }
             if (error.name === 'AccessDenied') {
-                 return res.status(403).json({ success: false, message: "Access denied to fetch assignment file. Check S3 permissions." });
+                return res.status(403).json({ success: false, message: "Access denied to fetch assignment file. Check S3 permissions." });
             }
             return res.status(500).json({ success: false, message: "Internal Server Error during file retrieval." });
         }
@@ -388,7 +365,7 @@ exports.downloadSubmissionFile = async (req, res) => {
     }
 
     try {
-        let key = new URL(submissionUrl).pathname.substring(1); 
+        let key = new URL(submissionUrl).pathname.substring(1);
 
         // Auto-fix if "webdev/" prefix is missing
         if (!key.startsWith("webdev/")) {
@@ -508,7 +485,7 @@ exports.generateAssignmentTasks = async (req, res) => {
         console.warn("Gemini model not yet initialized. Attempting to initialize now.");
         await initializeGeminiModel(); // Try to initialize if it wasn't ready
         if (!textGenModel) {
-             return res.status(500).json({ success: false, message: "Gemini AI model not ready. Please check backend logs." });
+            return res.status(500).json({ success: false, message: "Gemini AI model not ready. Please check backend logs." });
         }
     }
 
@@ -532,8 +509,8 @@ exports.generateAssignmentTasks = async (req, res) => {
 
         // Parse the numbered list
         const tasks = text.split('\n')
-                           .filter(line => line.match(/^\d+\.\s/))
-                           .map(line => line.replace(/^\d+\.\s/, '').trim());
+            .filter(line => line.match(/^\d+\.\s/))
+            .map(line => line.replace(/^\d+\.\s/, '').trim());
 
         if (tasks.length === 0) {
             return res.status(200).json({ success: false, message: "Could not generate tasks for the given topic. Please try a different topic or be more specific.", tasks: [] });

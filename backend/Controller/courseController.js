@@ -13,6 +13,24 @@ const createCourse = async (req, res) => {
         res.status(500).json({ message: "Server error", error });
     }
 };
+// Sirf course ka naam aur price dene wali API
+const getCourseNameAndPrice = async (req, res) => {
+    try {
+        const courses = await Course.find({}, "_id title price");
+""
+        res.status(200).json({
+            success: true,
+            data: courses
+        });
+    } catch (error) {
+        console.error("Error fetching course names & prices:", error);
+        res.status(500).json({
+            success: false,
+            message: "Server error",
+            error: error.message
+        });
+    }
+};
 
 // Get All Courses
 const getCourses = async (req, res) => {
@@ -99,4 +117,4 @@ const deleteCourse = async (req, res) => {
 };
 
 
-module.exports = { createCourse, getCourseById, getCourses, updateCourse, deleteCourse };
+module.exports = { createCourse, getCourseById, getCourses, updateCourse, deleteCourse ,getCourseNameAndPrice };

@@ -45,7 +45,7 @@ const ProtectedRoute = () => {
   <div className="flex items-center justify-center h-screen">
   <p className="text-xl text-[#4ecdc4]">Loading...</p>
 </div>;
-  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
+  return isAuthenticated ? <Outlet /> : <Navigate to="/" replace />;
 };
 
 export default ProtectedRoute;

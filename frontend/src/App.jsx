@@ -22,6 +22,7 @@ import AdminAssignments from "./Components/Admin/AdminAssignments";
 import ClientAssignmentResults from "./Components/Client/ClientAssignmentResults";
 import AdminGenerateAssignment from "./Components/Admin/AdminGenerateAssignment";
 import ClientSignup from "./Pages/Client/ClientSignup";
+import AdminEnrollmentRequests from "./Components/Admin/AdminEnrollmentRequests";
 
 function App() {
 
@@ -55,7 +56,7 @@ function App() {
             { path: "my-profile", element: <ClientProfile /> },
 
             { path: "course/:courseId", element: <LearningVideo /> },
-                        { path: "assignment-results", element: <ClientAssignmentResults /> }, // NEW: Route for assignment results
+            { path: "assignment-results", element: <ClientAssignmentResults /> }, // NEW: Route for assignment results
 
             { path: "upload-video", element: <ClientTest /> },
 
@@ -85,11 +86,17 @@ function App() {
               path: "students",
               element: <Students />,
             },
+           
+            {
+              path: "enrollment-requests",
+              element: <AdminEnrollmentRequests />,
+            },
+
             {
               path: "new-video",
               element: <AdminVideo />,
             },
-          
+
             {
               path: "Admin-course",
               element: <AdminCourse />
@@ -98,15 +105,15 @@ function App() {
               path: "Admin-course/videos/:courseId",
               element: <Coursevideo />
             },
-            { // --- NEW ROUTE ---
-              path: "assignments", // This matches the link in AdminSidebar
+            {
+              path: "assignments",
               element: <AdminAssignments />
             },
-            { // --- NEW ROUTE FOR AI GENERATION ---
-              path: "generate-assignment", 
+            {
+              path: "generate-assignment",
               element: <AdminGenerateAssignment />
             }
-            
+
           ],
         },
       ],

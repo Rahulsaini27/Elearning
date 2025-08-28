@@ -23,16 +23,21 @@ const uploadRoute = require("./Routes/uploadRoutes");
 const passwordRoute = require("./Routes/passwordRoute");
 const courseRoutes = require("./Routes/courseRoutes");
 const videoRoute = require("./Routes/videoRoutes");
-const assignmentRoutes = require("./Routes/assignmentRoutes"); // NEW
+const assignmentRoutes = require("./Routes/assignmentRoutes"); 
+const enrollmentRoutes = require("./Routes/enrollmentRoutes"); 
+const paymentRoutes = require("./Routes/paymentRoutes"); 
 
 app.use(express.static("public"));
 app.use("/api/user", UserRoute);
 app.use("/api/admin", AdminRoute);
+app.use("/api/enrollment", enrollmentRoutes); 
+app.use("/api/payment", paymentRoutes); 
+
 app.use("/api/videos", uploadRoute);
 app.use("/api/courses", courseRoutes);
 app.use("/api/password", passwordRoute);
 app.use("/api/secureVideos", videoRoute);
-app.use("/api/assignments", assignmentRoutes); // NEW: Use assignment routes
+app.use("/api/assignments", assignmentRoutes); 
 
 app.get("/", (req, res) => {
     res.send("This backend is running!");
@@ -49,7 +54,6 @@ mongoose.connect(process.env.MONGODB_URI,
 
 // ✅ Export app (required for Vercel)
 module.exports = app;
-
 
 
 

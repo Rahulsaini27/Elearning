@@ -7,6 +7,9 @@ require("dotenv").config();
 // Register User
 const mongoose = require("mongoose");
 // Login User
+// ... other imports ...
+
+// Login User
 exports.loginUser = async (req, res) => {
     const { email, password } = req.body;
 
@@ -14,26 +17,24 @@ exports.loginUser = async (req, res) => {
         const user = await User.findOne({ email });
         if (!user) return res.status(400).json({ msg: "User does not exist" });
 
-        if (!user.isActive) return res.status(403).json({ msg: "Your account is inactive. Please contact admin." });
+        // This check is now correctly handled on the backend
+        if (!user.isActive) {
+            return res.status(403).json({ msg: "Your account is inactive. Please contact admin." });
+        }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ msg: "Your password is wrong" });
 
-        // Generate new JWT token
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "3h" });
-
-        // Set expiration time (3 hours from now)
         const expiresAt = new Date();
         expiresAt.setHours(expiresAt.getHours() + 3);
-        // Invalidate previous session (auto logout previous device)
         user.activeSession = { token, expiresAt };
 
-        // Update login streak
+        // ... streak logic remains the same ...
         const currentTime = new Date();
         if (user.lastLogin) {
             const lastLoginDate = new Date(user.lastLogin);
             const diffInDays = Math.floor((currentTime - lastLoginDate) / (1000 * 60 * 60 * 24));
-
             if (diffInDays === 1) {
                 user.streak += 1;
             } else if (diffInDays > 1) {
@@ -42,17 +43,20 @@ exports.loginUser = async (req, res) => {
         } else {
             user.streak = 1;
         }
-
         user.lastLogin = currentTime;
+        
         await user.save();
 
-        res.json({ token, userId: user._id });
+        // --- CORRECTED: Send back the token, userId, AND the isActive status ---
+        res.json({ token, userId: user._id, isActive: user.isActive });
 
     } catch (err) {
         console.error(err);
         res.status(500).json({ msg: "Internal Server Error" });
     }
 };
+
+// ... rest of UserController.js remains the same ...
 // Logout User
 exports.logoutUser = async (req, res) => {
     const { userId } = req.user;

@@ -1,13 +1,11 @@
-// ForgetPassword.jsx
+
 import React, { useContext, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { AlertContext } from "../../Context/AlertContext";
-// Removed Link import as it's replaced by button
-import { useNavigate } from "react-router-dom"; // Keep useNavigate if needed for other navigations
+import { useNavigate } from "react-router-dom";
 import gsap from "gsap";
 import ProjectContext from "../../Context/ProjectContext";
 
-// Receive onClose and onSwitchForm props from the parent (ClientUI)
 function ForgetPassword({ onClose, onSwitchForm }) {
   const [formData, setFormData] = useState({ email: "", otp: "", newPassword: "" });
   const [step, setStep] = useState(1);
@@ -18,7 +16,7 @@ function ForgetPassword({ onClose, onSwitchForm }) {
 
   const { API_BASE_URL, API_URL, PASSWORD_BASE_URL } = useContext(ProjectContext)
 
-  const navigate = useNavigate(); // Still needed for context
+  const navigate = useNavigate();
   const formRef = useRef(null);
 
   useEffect(() => {
@@ -33,10 +31,9 @@ function ForgetPassword({ onClose, onSwitchForm }) {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError(""); // Reset error when user types
+    setError("");
   };
 
-  // 1️⃣ Send OTP
   const handleSendOTP = async (e) => {
     e.preventDefault();
     if (!isValidEmail(formData.email)) {
@@ -65,13 +62,11 @@ function ForgetPassword({ onClose, onSwitchForm }) {
     }
   };
 
-  // 2️⃣ Verify OTP
   const handleVerifyOTP = async (e) => {
     e.preventDefault();
     if (!formData.otp) {
       setError("Please enter the OTP");
       Toast.fire({ icon: "error", title: "Please enter the OTP" });
-
       return;
     }
 
@@ -97,7 +92,6 @@ function ForgetPassword({ onClose, onSwitchForm }) {
     }
   };
 
-  // 3️⃣ Reset Password
   const handleResetPassword = async (e) => {
     e.preventDefault();
     if (!formData.newPassword || formData.newPassword.length < 6) {
@@ -116,9 +110,8 @@ function ForgetPassword({ onClose, onSwitchForm }) {
 
       if (response.data.success) {
         Toast.fire({ icon: "success", title: "Password Reset Successfully!" });
-        // Close modal and switch back to login modal
         onClose();
-        onSwitchForm("login"); // Navigate back to the login form
+        onSwitchForm("login");
       } else {
         setError(response.data.message);
       }
@@ -132,43 +125,41 @@ function ForgetPassword({ onClose, onSwitchForm }) {
   };
 
   return (
-    // Removed min-h-screen and centering styles, and modal background/border styles as they are now handled by Modal.jsx
-    <div ref={formRef} className="relative"> {/* formRef now applies to this inner div for GSAP animation */}
+    <div ref={formRef} className="relative">
         <div className="text-center">
-          <h3 className="mt-4 text-2xl font-semibold text-white">
+          <h3 className="mt-4 text-2xl font-semibold text-gray-900"> {/* MODIFIED: text-white to text-gray-900 */}
             {step === 1 ? "Forgot Password" : step === 2 ? "Verify OTP" : "Reset Password"}
           </h3>
-          <p className="text-gray-300 text-sm">
+          <p className="text-gray-600 text-sm"> {/* MODIFIED: text-gray-300 to text-gray-600 */}
             {step === 1 ? "Enter your email to receive OTP" : step === 2 ? "Enter OTP sent to your email" : "Enter new password"}
           </p>
         </div>
 
         {step === 1 && (
           <form onSubmit={handleSendOTP} className="mt-6">
-            <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email Address" className="w-full px-4 py-2 rounded-lg bg-gray-900 text-white placeholder-gray-500 border border-gray-700 focus:ring-2 focus:ring-blue-500" required /> {/* Changed focus:ring-indigo-400 to blue-500 */}
-            <button type="submit" disabled={!isValidEmail(formData.email) || loading} className="mt-4 w-full px-6 py-2 text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 transition-all">{loading ? "Sending..." : "Send OTP"}</button> {/* Changed bg-indigo-600 to blue-600 */}
+            <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email Address" className="w-full px-4 py-2 rounded-lg bg-gray-100 text-gray-900 placeholder-gray-500 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required /> {/* MODIFIED: Styles for white BG */}
+            <button type="submit" disabled={!isValidEmail(formData.email) || loading} className="mt-4 w-full px-6 py-2 text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 transition-all">{loading ? "Sending..." : "Send OTP"}</button>
           </form>
         )}
 
         {step === 2 && (
           <form onSubmit={handleVerifyOTP} className="mt-6">
-            <input type="text" name="otp" value={formData.otp} onChange={handleChange} placeholder="Enter OTP" className="w-full px-4 py-2 rounded-lg bg-gray-900 text-white placeholder-gray-500 border border-gray-700 focus:ring-2 focus:ring-blue-500" required /> {/* Changed focus:ring-indigo-400 to blue-500 */}
-            <button type="submit" disabled={!formData.otp || loading} className="mt-4 w-full px-6 py-2 text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 transition-all">{loading ? "Verifying..." : "Verify OTP"}</button> {/* Changed bg-emerald-600 to blue-600 */}
+            <input type="text" name="otp" value={formData.otp} onChange={handleChange} placeholder="Enter OTP" className="w-full px-4 py-2 rounded-lg bg-gray-100 text-gray-900 placeholder-gray-500 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required /> {/* MODIFIED: Styles for white BG */}
+            <button type="submit" disabled={!formData.otp || loading} className="mt-4 w-full px-6 py-2 text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 transition-all">{loading ? "Verifying..." : "Verify OTP"}</button>
           </form>
         )}
 
         {step === 3 && (
           <form onSubmit={handleResetPassword} className="mt-6">
-            <input type="password" name="newPassword" value={formData.newPassword} onChange={handleChange} placeholder="New Password" className="w-full px-4 py-2 rounded-lg bg-gray-900 text-white placeholder-gray-500 border border-gray-700 focus:ring-2 focus:ring-blue-500" required /> {/* Changed focus:ring-indigo-400 to blue-500 */}
-            <button type="submit" disabled={formData.newPassword.length < 6 || loading} className="mt-4 w-full px-6 py-2 text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 transition-all">{loading ? "Resetting..." : "Reset Password"}</button> {/* Changed bg-indigo-600 to blue-600 */}
+            <input type="password" name="newPassword" value={formData.newPassword} onChange={handleChange} placeholder="New Password" className="w-full px-4 py-2 rounded-lg bg-gray-100 text-gray-900 placeholder-gray-500 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required /> {/* MODIFIED: Styles for white BG */}
+            <button type="submit" disabled={formData.newPassword.length < 6 || loading} className="mt-4 w-full px-6 py-2 text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 transition-all">{loading ? "Resetting..." : "Reset Password"}</button>
           </form>
         )}
 
         {error && <p className="mt-2 text-red-600 text-center">{error}</p>}
 
         <div className="mt-4 text-center">
-          {/* Changed Link to button with onClick to switch modal */}
-          <button type="button" onClick={() => onSwitchForm("login")} className="text-blue-300 hover:underline">Back to Login</button> {/* Changed text-indigo-300 to blue-300 */}
+          <button type="button" onClick={() => onSwitchForm("login")} className="text-blue-500 hover:underline">Back to Login</button> {/* MODIFIED: text-blue-300 to text-blue-500 */}
         </div>
     </div>
   );
