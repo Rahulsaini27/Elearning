@@ -8,7 +8,7 @@ require("dotenv").config();
 const app = express();
 
 app.use(cors({
-    origin: "https://course-frontend-nu.vercel.app",
+    origin: "https://elearning-fww9.vercel.app",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
     allowedHeaders: ["Authorization", "Content-Type"]
