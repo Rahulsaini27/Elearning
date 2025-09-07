@@ -17,7 +17,7 @@ const s3 = new S3Client({
 
 exports.generateUploadUrls = async (req, res) => {
     try {
-        const { title, videoType, thumbnailType, assignmentType } = req.body; // NEW: assignmentType
+        const { title, videoType, thumbnailType, assignmentType } = req.body; 
 
         if (!title || !videoType || !thumbnailType) {
             return res.status(400).json({ success: false, message: "Title, videoType, and thumbnailType are required!" });
@@ -31,8 +31,8 @@ exports.generateUploadUrls = async (req, res) => {
 
         let assignmentUploadUrl = null;
         let assignmentFilename = null;
-        if (assignmentType) { // Only generate if assignmentType is provided (optional assignment)
-            assignmentFilename = `${title}-assignment.${assignmentType.split("/")[1]}`; // Added -assignment suffix
+        if (assignmentType) { 
+            assignmentFilename = `${title}-assignment.${assignmentType.split("/")[1]}`; 
             assignmentUploadUrl = await getUploadUrl(assignmentFilename, assignmentType);
         }
 
@@ -40,7 +40,7 @@ exports.generateUploadUrls = async (req, res) => {
             success: true,
             video: { url: videoUploadUrl, filename: videoFilename },
             thumbnail: { url: thumbnailUploadUrl, filename: thumbnailFilename },
-            assignment: assignmentType ? { url: assignmentUploadUrl, filename: assignmentFilename } : null, // Conditional
+            assignment: assignmentType ? { url: assignmentUploadUrl, filename: assignmentFilename } : null, 
         });
     } catch (error) {
         console.error("Error generating upload URLs:", error);
@@ -50,7 +50,7 @@ exports.generateUploadUrls = async (req, res) => {
 
 
 
-// 🔹 Save Video & Link to Course
+//  Save Video & Link to Course
 // exports.saveVideo = async (req, res) => {
 //     try {
 //         const { title, videoUrl, thumbnailUrl, description, courseId } = req.body;
@@ -64,7 +64,7 @@ exports.generateUploadUrls = async (req, res) => {
 //             return res.status(404).json({ success: false, message: "Course not found" });
 //         }
 
-//         // 🔹 Ensure courseId is saved in the video document
+//         //  Ensure courseId is saved in the video document
 //         const newVideo = new Video({ title, videoUrl, thumbnailUrl, description, course: courseId });
 //         await newVideo.save();
 
@@ -103,31 +103,31 @@ exports.saveVideo = async (req, res) => {
                 title: `${title} Assignment`, // Default title
                 description: assignmentDescription || `Assignment for video "${title}"`,
                 assignmentUrl,
-                video: newVideo._id, // Link to the new video
-                course: courseId, // Link to the course
-                dueDate: assignmentDueDate || null, // Optional due date
+                video: newVideo._id, 
+                course: courseId, 
+                dueDate: assignmentDueDate || null, 
             });
             await newAssignment.save();
-            newVideo.assignment = newAssignment._id; // Link the newly created assignment to the video
+            newVideo.assignment = newAssignment._id; 
         }
 
-        await newVideo.save(); // Save the video after linking the assignment
+        await newVideo.save(); 
 
-        course.videos.push(newVideo._id); // Add video to course's videos array
+        course.videos.push(newVideo._id);
         await course.save();
 
         res.status(201).json({
             success: true,
             message: "Video and optional assignment stored successfully!",
             video: newVideo,
-            assignment: newAssignment, // Return new assignment if created
+            assignment: newAssignment, 
         });
     } catch (error) {
         console.error("Error saving video:", error);
         res.status(500).json({ success: false, message: error.message });
     }
 };
-// 🔹 Get Videos of a Course (Only for Enrolled Students)
+// Get Videos of a Course (Only for Enrolled Students)
 exports.getCourseVideos = async (req, res) => {
     try {
         const { courseId } = req.params;
@@ -185,7 +185,7 @@ exports.getCourseVideosByUser = async (req, res) => {
         const course = await Course.findById(courseId).populate({
             path: 'videos',
             populate: {
-                path: 'assignment' // THIS POPULATES THE ASSIGNMENT DETAILS FOR EACH VIDEO
+                path: 'assignment' 
             }
         });
         if (!course) {
@@ -195,35 +195,33 @@ exports.getCourseVideosByUser = async (req, res) => {
             return res.status(403).json({ success: false, message: "Access denied: You are not enrolled in this course." });
         }
 
-        // --- NEW LOGIC TO CHECK SUBMISSION STATUS ---
-        // 1. Get all assignment IDs relevant to these videos
+     
         const assignmentIds = course.videos
             .map(video => video.assignment ? video.assignment._id : null)
-            .filter(id => id); // Filter out nulls
+            .filter(id => id); 
 
-        // 2. Fetch all submissions made by this user for these assignments
-        const userSubmissions = await AssignmentSubmission.find({
+
+            const userSubmissions = await AssignmentSubmission.find({
             student: userId,
             assignment: { $in: assignmentIds }
         });
 
-        // 3. Create a map for quick lookup of submissions by assignment ID
-        const submissionMap = new Map(); // Key: assignmentId.toString(), Value: submission object
+        const submissionMap = new Map();
         userSubmissions.forEach(sub => {
             submissionMap.set(sub.assignment.toString(), sub);
         });
 
-        // 4. Augment each video object with its assignment's submission status
+
         const videosWithStatus = course.videos.map(video => {
-            const videoObj = video.toObject(); // Convert Mongoose document to a plain JS object
+            const videoObj = video.toObject(); 
 
             if (videoObj.assignment) {
-                // Check if this assignment has been submitted by the current user
+
                 const existingSubmission = submissionMap.get(videoObj.assignment._id.toString());
                 if (existingSubmission) {
                     videoObj.assignment.submissionStatus = {
                         submitted: true,
-                        submissionDetails: { // Include submission URL if needed on frontend
+                        submissionDetails: {
                             _id: existingSubmission._id,
                             submissionUrl: existingSubmission.submissionUrl,
                             submittedAt: existingSubmission.submittedAt,
@@ -235,7 +233,7 @@ exports.getCourseVideosByUser = async (req, res) => {
             }
             return videoObj;
         });
-        // --- END NEW LOGIC ---
+        
 
         res.status(200).json({ success: true, videos: videosWithStatus });
     } catch (error) {

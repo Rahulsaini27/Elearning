@@ -1,16 +1,5 @@
-
-
 import React, { useState, useEffect, useContext, useRef } from "react";
-import {
-  Menu,
-  Search,
-  Bell,
-  MessageCircle,
-  Settings,
-  ChevronDown
-} from "lucide-react";
-import { Link } from "react-router-dom"; // <-- ADD THIS
-
+import { Menu, Search, Bell, ChevronDown } from "lucide-react";
 import ProjectContext from "../../Context/ProjectContext";
 import { useNavigate } from "react-router-dom";
 import { AlertContext } from "../../Context/AlertContext";
@@ -21,54 +10,44 @@ function ClientHeader({ toggleSidebar }) {
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
   const { Toast } = useContext(AlertContext);
-
-  const { user, API_BASE_URL, API_URL, USER_BASE_URL } = useContext(ProjectContext); // Ensure user context is handled safely
+  const { user, API_BASE_URL, API_URL, USER_BASE_URL } = useContext(ProjectContext);
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
-
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsProfileDropdownOpen(false);
       }
     };
-
     if (isProfileDropdownOpen) {
       document.addEventListener("click", handleClickOutside);
     }
     return () => document.removeEventListener("click", handleClickOutside);
   }, [isProfileDropdownOpen]);
 
-
-  const handleLogout = async (userId) => {
-    console.log(userId);
+  const handleLogout = async () => {
     const token = localStorage.getItem("token");
-    console.log(`${API_BASE_URL}${API_URL}${USER_BASE_URL}/logout`)
     try {
       const response = await fetch(`${API_BASE_URL}${API_URL}${USER_BASE_URL}/logout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Send token for authentication
+          Authorization: `Bearer ${token}`,
         },
       });
 
       if (response.ok) {
-        // Clear local storage after successful logout
         Toast.fire({ icon: "success", title: "Logout Successfully" });
-
         localStorage.removeItem("token");
         localStorage.removeItem("userId");
-
-        navigate("/login"); // Redirect to login page
+        navigate("/");
       } else {
         console.error("Logout failed:", await response.json());
       }
@@ -76,85 +55,60 @@ function ClientHeader({ toggleSidebar }) {
       console.error("Error logging out:", error);
     }
   };
+
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-30 h-16 
-      border-b border-slate-200 flex items-center justify-between 
-      px-4 md:px-6 bg-white/90 backdrop-blur-md 
-      transition-all duration-300 
-      ${isScrolled ? "shadow-md" : ""} 
-      lg:pl-[calc(16rem+1rem)]`}
+      className={`fixed top-0 left-0 right-0 z-30 h-16 border-b border-gray-200 flex items-center justify-between px-4 md:px-6 bg-white/90 backdrop-blur-md transition-all duration-300 ${isScrolled ? "shadow-md" : ""} lg:pl-[calc(16rem+1rem)]`}
     >
-      <div className="flex items-center gap-4 w-full">
-        {/* Mobile Menu Toggle */}
+      <div className="flex items-center gap-4 w-full pr-5">
         <button
           onClick={toggleSidebar}
-          className="lg:hidden p-2 text-slate-700 rounded-lg hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="lg:hidden p-2 text-gray-700 rounded-full hover:bg-gray-100"
         >
           <Menu size={24} />
         </button>
-
-        {/* Search Bar */}
-        <div className="relative flex-1 max-w-md ml-2">
-          <div className="relative w-full">
-            <Search
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"
-              size={18}
-            />
-            <input
-              type="text"
-              placeholder="Search dashboard..."
-              className="w-full h-10 pl-10 pr-4 rounded-full bg-slate-100 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 placeholder-slate-500"
-            />
-          </div>
+        <div className="relative flex-1 max-w-xs">
+          <Search
+            className="absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-400"
+            size={20}
+          />
+          <input
+            type="text"
+            placeholder="Search..."
+            className="w-full h-12 pl-12 pr-4 rounded-full bg-gray-100 border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-800"
+          />
         </div>
-
-        {/* Right Side Icons */}
         <div className="flex items-center ml-auto gap-4">
-          <div className="flex items-center gap-3">
-
-
-           <button className="relative p-2 text-slate-700 hover:bg-slate-100 rounded-full">
-              <MessageCircle size={20} />
-              <span className="absolute top-0 right-0 h-2 w-2 bg-emerald-500 rounded-full"></span>
+          <button className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full">
+            <Bell size={22} />
+            <span className="absolute top-1.5 right-1.5 h-2.5 w-2.5 bg-orange-500 rounded-full border-2 border-white"></span>
+          </button>
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+              className="flex items-center gap-2 hover:bg-gray-100 p-2 rounded-full"
+            >
+              <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
+                {user?.name?.charAt(0)?.toUpperCase() || "U"}
+              </div>
             </button>
-          
-            <button className="p-2 text-slate-700 hover:bg-slate-100 rounded-full">
-              <Settings size={20} />
-            </button>
-
-            {/* Profile Section */}
-            <div className="relative" ref={dropdownRef}>
-              <button
-                onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                className="flex items-center gap-2 hover:bg-slate-100 p-2 rounded-lg"
-              >
-                <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-medium">
-                  {user?.name?.charAt(0)?.toUpperCase() || "U"}
-                </div>
-                <span className="text-sm font-medium hidden md:block text-slate-800">
-                  {user?.name || "User"}
-                </span>
-                <ChevronDown size={16} className="text-slate-500" />
-              </button>
-
-              {/* Dropdown Menu */}
-              {isProfileDropdownOpen && (
-                <div className="absolute right-0 top-full mt-2 w-48 bg-white shadow-lg rounded-lg border border-slate-200 py-2">
-                  <button onClick={() => navigate("/client/my-profile")} className="w-full text-left px-4 py-2 hover:bg-slate-100 text-sm text-slate-800">
-                    My Profile
-                  </button>
-                  <button className="w-full text-left px-4 py-2 hover:bg-slate-100 text-sm text-slate-800">
-                    Settings
-                  </button>
-                  <div className="border-t my-2 "></div>
-                  <button onClick={() => handleLogout(user._id)}
-                    className="w-full cursor-pointer text-left px-4 py-2 hover:bg-slate-100 text-sm text-red-600">
-                    Logout
-                  </button>
-                </div>
-              )}
-            </div>
+            {isProfileDropdownOpen && (
+              <div className="absolute right-0 top-full mt-3 w-48 bg-white shadow-2xl rounded-xl border border-gray-100 py-2 z-40">
+                <button
+                  onClick={() => navigate("/client/my-profile")}
+                  className="w-full text-left px-4 py-2.5 hover:bg-gray-100 text-sm text-gray-800 font-medium"
+                >
+                  My Profile
+                </button>
+                <div className="border-t my-1 border-gray-100"></div>
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-4 py-2.5 hover:bg-gray-100 text-sm text-red-600 font-medium"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

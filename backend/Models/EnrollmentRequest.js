@@ -10,11 +10,11 @@ const EnrollmentRequestSchema = new mongoose.Schema({
     education: { type: String },
     occupation: { type: String },
     
-    // --- NEW FIELDS for OTP Verification ---
+
     otp: { type: String },
     otpExpire: { type: Date },
     isEmailVerified: { type: Boolean, default: false },
-    // --- END NEW FIELDS ---
+
     
     course: { type: mongoose.Schema.Types.ObjectId, ref: "Course", required: true },
     paymentStatus: {

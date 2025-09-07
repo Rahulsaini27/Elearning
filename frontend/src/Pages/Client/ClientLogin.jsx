@@ -99,7 +99,7 @@ const ClientLogin = ({ onClose, onSwitchForm }) => {
           <button
             type="button"
             onClick={() => onSwitchForm("adminLogin")}
-            className="text-sm text-gray-500 hover:text-blue-500 transition-colors underline"
+            className="text-sm text-gray-500 cursor-pointer hover:text-blue-500 transition-colors underline"
           >
             Login as Admin
           </button>
@@ -107,7 +107,7 @@ const ClientLogin = ({ onClose, onSwitchForm }) => {
       </form>
       <div className="mt-6 text-center text-gray-600">
         Don't have an account?{" "}
-        <button type="button" onClick={() => onSwitchForm("signup")} className="text-blue-500 hover:underline">
+        <button type="button" onClick={() => onSwitchForm("signup")} className="text-blue-500 cursor-pointer hover:underline">
           Sign Up
         </button>
       </div>

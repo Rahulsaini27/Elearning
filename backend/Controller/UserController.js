@@ -3,11 +3,8 @@ const jwt = require("jsonwebtoken");
 const User = require("../Models/UserModel");
 const Course = require("../Models/Course");
 require("dotenv").config();
-
-// Register User
 const mongoose = require("mongoose");
-// Login User
-// ... other imports ...
+
 
 // Login User
 exports.loginUser = async (req, res) => {
@@ -17,7 +14,6 @@ exports.loginUser = async (req, res) => {
         const user = await User.findOne({ email });
         if (!user) return res.status(400).json({ msg: "User does not exist" });
 
-        // This check is now correctly handled on the backend
         if (!user.isActive) {
             return res.status(403).json({ msg: "Your account is inactive. Please contact admin." });
         }
@@ -30,7 +26,7 @@ exports.loginUser = async (req, res) => {
         expiresAt.setHours(expiresAt.getHours() + 3);
         user.activeSession = { token, expiresAt };
 
-        // ... streak logic remains the same ...
+
         const currentTime = new Date();
         if (user.lastLogin) {
             const lastLoginDate = new Date(user.lastLogin);
@@ -47,7 +43,7 @@ exports.loginUser = async (req, res) => {
         
         await user.save();
 
-        // --- CORRECTED: Send back the token, userId, AND the isActive status ---
+
         res.json({ token, userId: user._id, isActive: user.isActive });
 
     } catch (err) {
@@ -56,7 +52,6 @@ exports.loginUser = async (req, res) => {
     }
 };
 
-// ... rest of UserController.js remains the same ...
 // Logout User
 exports.logoutUser = async (req, res) => {
     const { userId } = req.user;
@@ -65,7 +60,7 @@ exports.logoutUser = async (req, res) => {
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ msg: "User not found" });
 
-        // Clear active session
+
         user.activeSession = null;
         await user.save();
 
@@ -105,14 +100,14 @@ exports.registerUser = async (req, res) => {
             return res.status(400).json({ msg: "No enrolled courses received" });
         }
 
-        // Hash password
+
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Ensure enrolledCourses is an array of ObjectIds
+
         let validCourses = [];
         if (Array.isArray(enrolledCourses)) {
             validCourses = enrolledCourses
-                .filter(courseId => mongoose.Types.ObjectId.isValid(courseId)) // Ensure valid ObjectId
+                .filter(courseId => mongoose.Types.ObjectId.isValid(courseId)) 
                 .map(courseId => new mongoose.Types.ObjectId(courseId));
         }
         // Create new user
@@ -125,18 +120,18 @@ exports.registerUser = async (req, res) => {
             education,
             occupation,
             gender,
-            enrolledCourses: enrolledCourses // Ensure correct format
+            enrolledCourses: enrolledCourses 
         });
         console.log(enrolledCourses)
         // Save user to database
         await Course.updateMany(
-            { _id: { $in: enrolledCourses }, assignedStudents: { $ne: newUser._id } }, // Prevent duplicates
+            { _id: { $in: enrolledCourses }, assignedStudents: { $ne: newUser._id } }, 
             { $push: { assignedStudents: newUser._id } }
         );
 
         await newUser.save();
-        // Assign courses to user
 
+        
         res.status(201).json({ msg: "User registered successfully" });
 
     } catch (err) {
@@ -155,8 +150,8 @@ exports.getUserProfile = async (req, res) => {
 
         const user = await User.findById(userId)
             .select("-password")
-            .populate("enrolledCourses", "title category description lessons videos"); // ✅ Fetch course title & category
-
+            .populate("enrolledCourses", "title category description lessons videos");
+            
         if (!user) return res.status(404).json({ msg: "User not found" });
 
         res.json(user);
@@ -171,8 +166,8 @@ exports.getUserProfile = async (req, res) => {
 exports.getAllUsers = async (req, res) => {
     try {
         const users = await User.find().populate({
-            path: "enrolledCourses", // Assuming "enrolledCourses" stores course IDs
-            select: "title" // Only fetch the course title (avoid unnecessary data)
+            path: "enrolledCourses", 
+            select: "title" 
         });
 
         res.status(200).json(users);
@@ -189,13 +184,11 @@ exports.updateUser = async (req, res) => {
     try {
         const { password, ...updateFields } = req.body;
 
-        // ✅ If updating password, hash it
         if (password) {
             const hashedPassword = await bcrypt.hash(password, 10);
             updateFields.password = hashedPassword;
         }
 
-        // ✅ Fetch the existing user to check current courses
         const existingUser = await User.findById(req.params.id);
         if (!existingUser) {
             return res.status(404).json({ msg: "User not found" });
@@ -259,12 +252,11 @@ exports.assignCourseToUser = async (req, res) => {
     try {
         const { userId, courseId } = req.body;
 
-        // ✅ Validate MongoDB ObjectId format
         if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(courseId)) {
             return res.status(400).json({ success: false, msg: "Invalid user or course ID" });
         }
 
-        // ✅ Find user and course
+        //  Find user and course
         const [user, course] = await Promise.all([
             User.findById(userId),
             Course.findById(courseId)
@@ -273,7 +265,7 @@ exports.assignCourseToUser = async (req, res) => {
         if (!user) return res.status(404).json({ success: false, msg: "User not found" });
         if (!course) return res.status(404).json({ success: false, msg: "Course not found" });
 
-        // ✅ Prevent duplicate enrollments
+        // Prevent duplicate enrollments
         const isUserAlreadyEnrolled = user.enrolledCourses.some(id => id.toString() === courseId);
         const isCourseAlreadyAssigned = course.assignedStudents.some(id => id.toString() === userId);
 
@@ -281,18 +273,18 @@ exports.assignCourseToUser = async (req, res) => {
             return res.status(400).json({ success: false, msg: "User is already enrolled in this course" });
         }
 
-        // ✅ Assign course to user if not already enrolled
+        // Assign course to user if not already enrolled
         if (!isUserAlreadyEnrolled) {
             user.enrolledCourses.push(courseId);
         }
 
-        // ✅ Assign user to course if not already assigned
+        // Assign user to course if not already assigned
         if (!isCourseAlreadyAssigned) {
             course.assignedStudents.push(userId);
-            course.markModified("assignedStudents");  // 🔥 Ensure Mongoose detects change
+            course.markModified("assignedStudents");  
         }
 
-        // ✅ Save both models simultaneously for efficiency
+        // Save both models simultaneously for efficiency
         await Promise.all([user.save(), course.save()]);
 
         res.status(200).json({ success: true, msg: "Course assigned successfully", user, course });
@@ -305,7 +297,7 @@ exports.assignCourseToUser = async (req, res) => {
 
 exports.removeStudentFromCourse = async (req, res) => {
     try {
-        const { courseId, userId } = req.params; // Extract both params
+        const { courseId, userId } = req.params; 
 
         // Find the course
         const course = await Course.findById(courseId);
@@ -322,11 +314,11 @@ exports.removeStudentFromCourse = async (req, res) => {
 
         // Remove student from the course's assignedStudents array
         course.assignedStudents = course.assignedStudents.filter(id => id.toString() !== userId);
-        await course.save(); // Save updated course
+        await course.save(); 
 
         // Remove course from the user's enrolledCourses array
         user.enrolledCourses = user.enrolledCourses.filter(id => id.toString() !== courseId);
-        await user.save(); // Save updated user
+        await user.save(); 
 
         res.status(200).json({ message: "Student removed successfully from course and user model", course, user });
     } catch (error) {

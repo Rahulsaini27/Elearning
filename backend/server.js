@@ -7,14 +7,13 @@ require("dotenv").config();
 
 const app = express();
 
-// app.use(cors({
-//     origin: "https://course-frontend-nu.vercel.app",
-//     methods: ["GET", "POST", "PUT", "DELETE"],
-//     credentials: true,
-//     allowedHeaders: ["Authorization", "Content-Type"]
+app.use(cors({
+    origin: "https://elearning-fww9.vercel.app",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+    allowedHeaders: ["Authorization", "Content-Type"]
 
-// }));
-app.use(cors())
+}));
 app.use(express.json());
 
 const UserRoute = require("./Routes/UserRoute");
@@ -42,7 +41,7 @@ app.use("/api/assignments", assignmentRoutes);
 app.get("/", (req, res) => {
     res.send("This backend is running!");
 });
-// 🔹 Connect to MongoDB (only if not already connected)
+//  Connect to MongoDB (only if not already connected)
 mongoose.connect(process.env.MONGODB_URI,
     { dbName: "Course" }).then(() => {
         console.log("Connected to DB");

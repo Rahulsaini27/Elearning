@@ -2,7 +2,7 @@ const { default: mongoose } = require("mongoose");
 const Course = require("../Models/Course");
 const User = require("../Models/UserModel");
 
-// Create Course
+
 const createCourse = async (req, res) => {
     try {
         const newCourse = new Course(req.body);
@@ -13,7 +13,7 @@ const createCourse = async (req, res) => {
         res.status(500).json({ message: "Server error", error });
     }
 };
-// Sirf course ka naam aur price dene wali API
+
 const getCourseNameAndPrice = async (req, res) => {
     try {
         const courses = await Course.find({}, "_id title price");
@@ -48,19 +48,19 @@ const getCourseById = async (req, res) => {
     try {
         const { userId, courseId } = req.params;
         // console.log(userId, courseId)
-        // ✅ Validate MongoDB ObjectId
+
         if (!mongoose.Types.ObjectId.isValid(courseId) || !mongoose.Types.ObjectId.isValid(userId)) {
             return res.status(400).json({ success: false, message: "Invalid course or user ID" });
         }
 
-        // ✅ Check if User Exists
+        //  Check if User Exists
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found" });
         }
 
 
-        // ✅ Fetch Course with Videos & Assigned Students
+        // Fetch Course with Videos & Assigned Students
         const course = await Course.findById(courseId)
             .populate("videos")
             .populate("assignedStudents", "name email");
@@ -70,7 +70,7 @@ const getCourseById = async (req, res) => {
             return res.status(404).json({ success: false, message: "Course not found" });
         }
 
-        // ✅ Check if User is Enrolled
+        // Check if User is Enrolled
         if (!user.enrolledCourses.includes(courseId)) {
             return res.status(403).json({ success: false, message: "Access denied: You are not enrolled in this course" });
         }

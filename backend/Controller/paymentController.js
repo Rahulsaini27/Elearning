@@ -8,13 +8,13 @@ const razorpay = new Razorpay({
     key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-// REMOVED: createRazorpayOrder is no longer needed here.
+
 
 // 1. Verify Payment and UPDATE the Enrollment Request
 exports.verifyAndUpdatePayment = async (req, res) => {
     try {
         const {
-            requestId, // We will now get this from the frontend
+            requestId,
             razorpay_order_id,
             razorpay_payment_id,
             razorpay_signature,
@@ -31,14 +31,14 @@ exports.verifyAndUpdatePayment = async (req, res) => {
             return res.status(400).json({ success: false, msg: "Payment verification failed. Invalid signature." });
         }
 
-        // --- If signature is valid, find and update the request ---
+
         const updatedRequest = await EnrollmentRequest.findByIdAndUpdate(
             requestId,
             {
                 paymentStatus: "Success",
                 paymentId: razorpay_payment_id,
             },
-            { new: true } // Return the updated document
+            { new: true } 
         );
 
         if (!updatedRequest) {

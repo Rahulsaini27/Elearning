@@ -2,7 +2,7 @@ const User = require("../Models/UserModel");
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 
-// Nodemailer Setup
+
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -35,10 +35,7 @@ exports.sendOtp = async (req, res) => {
     html: `
       <div style="max-width: 600px; margin: auto; padding: 20px; font-family: Arial, sans-serif; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
         
-        <!-- Logo -->
-        <div style="text-align: center;">
-          <img src="../../frontend/public/logo.png" alt="Your Logo" style="width: 120px; margin-bottom: 20px;">
-        </div>
+      
   
         <!-- Welcome Message -->
         <h2 style="color: #333; text-align: center;">🔑 Password Reset Request</h2>

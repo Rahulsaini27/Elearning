@@ -1,7 +1,7 @@
 const cron = require("node-cron");
 const User = require("../Models/UserModel");
 
-// Cron job runs every day at midnight (00:00)
+
 cron.schedule("0 0 * * *", async () => {
   console.log("Running streak maintenance job...");
 

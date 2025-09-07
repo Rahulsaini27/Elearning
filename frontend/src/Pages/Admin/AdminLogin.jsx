@@ -73,7 +73,7 @@ const AdminLogin = ({ onClose, onSwitchForm }) => {
         </form>
         <div className="mt-6 text-center text-gray-600"> {/* MODIFIED: text-gray-400 to text-gray-600 */}
           Are you a student?{" "}
-          <button type="button" onClick={() => onSwitchForm("login")} className="text-blue-500 hover:underline"> {/* MODIFIED: text-blue-300 to text-blue-500 */}
+          <button type="button" onClick={() => onSwitchForm("login")} className="text-blue-500 cursor-pointer hover:underline"> {/* MODIFIED: text-blue-300 to text-blue-500 */}
             Login here
           </button>
         </div>

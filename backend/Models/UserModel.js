@@ -13,7 +13,7 @@ const UserSchema = new mongoose.Schema({
     occupation: { type: String },
     gender: {
         type: String,
-        enum: ["male", "female", "other"], // ✅ Ensure it matches frontend options
+        enum: ["male", "female", "other"], 
         required: true,
     },
     isActive: { type: Boolean, default: true },

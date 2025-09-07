@@ -1,5 +1,3 @@
-// Controller/enrollmentController.js
-
 const EnrollmentRequest = require("../Models/EnrollmentRequest");
 const Course = require("../Models/Course");
 const User = require("../Models/UserModel");
@@ -8,7 +6,7 @@ const Razorpay = require('razorpay');
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 
-// --- Re-using Nodemailer setup ---
+
 const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -23,7 +21,7 @@ const razorpay = new Razorpay({
     key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-// STEP 1 (Signup): Create a pending request and send OTP for verification.
+// (Signup): Create a pending request and send OTP for verification.
 exports.registerAndSendOtp = async (req, res) => {
     try {
         const { name, email, password, courseId, gender } = req.body;
@@ -44,9 +42,9 @@ exports.registerAndSendOtp = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
         const otp = generateOtp();
 
-        // Use findOneAndUpdate to create or update a pending request
+
         const newRequest = await EnrollmentRequest.findOneAndUpdate(
-            { email: email, approvalStatus: 'Pending' }, // Find existing pending request
+            { email: email, approvalStatus: 'Pending' }, 
             {
                 name,
                 password: hashedPassword,
@@ -56,7 +54,7 @@ exports.registerAndSendOtp = async (req, res) => {
                 otpExpire: Date.now() + 10 * 60 * 1000, // 10 minutes
                 isEmailVerified: false,
             },
-            { upsert: true, new: true, setDefaultsOnInsert: true } // Create if not found
+            { upsert: true, new: true, setDefaultsOnInsert: true } 
         );
 
         const mailOptions = {
@@ -79,7 +77,7 @@ exports.registerAndSendOtp = async (req, res) => {
     }
 };
 
-// STEP 2 (Signup): Verify OTP and then initiate the payment process.
+
 exports.verifyOtpAndInitiatePayment = async (req, res) => {
     try {
         const { requestId, otp } = req.body;
@@ -134,8 +132,8 @@ exports.getAllRequests = async (req, res) => {
 exports.approveRequest = async (req, res) => {
     try {
         const { requestId } = req.params;
-        const request = await EnrollmentRequest.findById(requestId).populate('course'); //Populate course details
-
+        const request = await EnrollmentRequest.findById(requestId).populate('course');
+        
         if (!request) {
             return res.status(404).json({ msg: "Enrollment request not found." });
         }
@@ -149,7 +147,7 @@ exports.approveRequest = async (req, res) => {
         const newUser = new User({
             name: request.name,
             email: request.email,
-            password: request.password, // This is already hashed
+            password: request.password, 
             phone: request.phone,
             address: request.address,
             education: request.education,
@@ -167,7 +165,7 @@ exports.approveRequest = async (req, res) => {
         request.approvalStatus = "Approved";
         await request.save();
 
-        // --- NEW: Send Approval Email ---
+
         const mailOptions = {
             from: `"LearnHub" <${process.env.EMAIL_USER}>`,
             to: request.email,
@@ -194,8 +192,8 @@ exports.approveRequest = async (req, res) => {
             `,
         };
         await transporter.sendMail(mailOptions);
-        // --- END: Send Approval Email ---
 
+        
 
         res.status(200).json({ msg: "User approved, registered, and notified successfully!", user: newUser });
     } catch (err) {
@@ -205,7 +203,7 @@ exports.approveRequest = async (req, res) => {
 };
 
 
-// (Admin-Side) Reject an enrollment request
+
 exports.rejectRequest = async (req, res) => {
     try {
         const { requestId } = req.params;

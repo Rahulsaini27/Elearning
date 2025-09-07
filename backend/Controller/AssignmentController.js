@@ -1,31 +1,30 @@
-// Controller/AssignmentController.js (NEW FILE)
 const Assignment = require("../Models/Assignment");
 const AssignmentSubmission = require("../Models/AssignmentSubmission");
-const { getUploadUrl, s3 } = require("../services/s3Service"); // Re-use S3 service, import s3 client for getObject
+const { getUploadUrl, s3 } = require("../services/s3Service"); 
 const { GetObjectCommand } = require("@aws-sdk/client-s3");
 const mongoose = require('mongoose');
-const Course = require("../Models/Course"); // Add this
-const User = require("../Models/UserModel"); // Add this
+const Course = require("../Models/Course"); 
+const User = require("../Models/UserModel"); 
 
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const PDFDocument = require('pdfkit'); // For PDF generation
-// END NEW IMPORTS
+
 
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// --- CORRECTED: Directly initialize a specific, free-tier compatible model ---
+
 let textGenModel;
 try {
-    // gemini-1.5-flash is a powerful and cost-effective model suitable for the free tier.
+
     textGenModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 } catch (error) {
     console.error("CRITICAL: Failed to initialize Gemini AI. Please check your API key and project setup.", error);
-    // Set model to null so that any attempts to use it will fail gracefully.
+
     textGenModel = null;
 }
 
-// Student API: Generate upload URL for submission PDF
+
 
 
 exports.generateSubmissionUploadUrl = async (req, res) => {
@@ -61,7 +60,8 @@ exports.generateSubmissionUploadUrl = async (req, res) => {
             message: "Upload URL generated successfully.",
             uploadUrl: submissionUploadUrl,
             filename: submissionFilename,
-            finalUrl, // ✅ Sent to frontend so no env vars needed there
+            finalUrl, 
+            
         });
 
     } catch (error) {
@@ -74,7 +74,8 @@ exports.generateSubmissionUploadUrl = async (req, res) => {
 exports.saveSubmission = async (req, res) => {
     try {
         const { assignmentId, submissionUrl, submissionText } = req.body;
-        const { userId } = req.user; // from UserAuth middleware
+        const { userId } = req.user; 
+        
 
         if (!assignmentId || !submissionUrl || !userId) {
             return res.status(400).json({ success: false, message: "Assignment ID, submission URL, and user ID are required." });
@@ -120,32 +121,33 @@ exports.getAssignmentSubmissions = async (req, res) => {
 
 
 exports.getSubmittedFile = async (req, res) => {
-    const { filename } = req.query; // e.g., submissions/studentId-assignmentId-timestamp.pdf or .zip
+    const { filename } = req.query; 
+    
 
     if (!filename) {
         return res.status(400).json({ error: "Filename is required" });
     }
 
     const bucketName = process.env.AWS_BUCKET_NAME;
-    // const key = `webdev/${filename}`; // Assuming submissions are also stored in 'webdev/' prefix
-    const key = filename; // <-- NEW, CORRECT LINE: Use the filename directly as it already includes the 'submissions/' prefix
+
+    const key = filename; 
 
     try {
         const { Body, ContentType, ContentLength } = await s3.send(
             new GetObjectCommand({ Bucket: bucketName, Key: key })
         );
 
-        res.setHeader("Content-Type", ContentType || "application/octet-stream"); // Default to octet-stream for unknown types
+        res.setHeader("Content-Type", ContentType || "application/octet-stream"); 
+        
         res.setHeader("Content-Length", ContentLength);
 
-        // Determine content disposition based on content type
-        let disposition = "inline"; // Default for PDFs, images, etc.
+        let disposition = "inline"; 
         if (ContentType === "application/zip") {
-            disposition = "attachment"; // Force download for ZIP files
+            disposition = "attachment"; 
         } else if (ContentType && ContentType.startsWith("image/")) {
-            disposition = "inline"; // Keep inline for images
+            disposition = "inline"; 
         } else if (ContentType === "application/pdf") {
-            disposition = "inline"; // Keep inline for PDFs
+            disposition = "inline"; 
         }
         res.setHeader("Content-Disposition", `${disposition}; filename="${filename.split('/').pop()}"`);
 
@@ -170,7 +172,6 @@ exports.getSubmittedFile = async (req, res) => {
 
 exports.getAdminAssignmentOverview = async (req, res) => {
     try {
-        // Fetch all relevant data efficiently
         const [allAssignments, allSubmissions, allCourses, allUsers] = await Promise.all([
             Assignment.find().populate('video', 'title').populate('course', 'title assignedStudents'),
             AssignmentSubmission.find().populate('student', 'name email').populate('assignment', 'title video course'),
@@ -178,23 +179,21 @@ exports.getAdminAssignmentOverview = async (req, res) => {
             User.find().select('name email enrolledCourses')
         ]);
 
-        // Map for quick lookup of submissions by assignment and student
-        const submissionMap = new Map(); // Key: `${assignmentId}-${studentId}`, Value: submission object
+        const submissionMap = new Map(); 
         allSubmissions.forEach(sub => {
             if (sub.assignment && sub.student) {
                 submissionMap.set(`${sub.assignment._id.toString()}-${sub.student._id.toString()}`, sub);
             }
         });
 
-        // Map for quick lookup of course assigned students
-        const courseStudentMap = new Map(); // Key: courseId, Value: Array of student objects
+        const courseStudentMap = new Map(); 
         allCourses.forEach(course => {
             courseStudentMap.set(course._id.toString(), course.assignedStudents || []);
         });
 
         const overview = [];
 
-        // Iterate through each assignment to build the detailed status
+
         for (const assignment of allAssignments) {
             const assignmentInfo = {
                 _id: assignment._id,
@@ -207,7 +206,7 @@ exports.getAdminAssignmentOverview = async (req, res) => {
                     title: assignment.course.title
                 } : null,
                 dueDate: assignment.dueDate,
-                studentStatuses: [] // To hold submission status for each relevant student
+                studentStatuses: [] 
             };
 
             const studentsAssignedToCourse = courseStudentMap.get(assignment.course?._id?.toString());
@@ -221,7 +220,7 @@ exports.getAdminAssignmentOverview = async (req, res) => {
                         studentId: student._id,
                         studentName: student.name,
                         studentEmail: student.email,
-                        submitted: !!submission, // True if submission exists
+                        submitted: !!submission, 
                         submissionDetails: submission ? {
                             _id: submission._id,
                             submissionUrl: submission.submissionUrl,
@@ -231,8 +230,7 @@ exports.getAdminAssignmentOverview = async (req, res) => {
                     });
                 }
             } else {
-                // If no students assigned to the course, log or handle as per policy.
-                // For now, it means no one is expected to submit.
+                
             }
             overview.push(assignmentInfo);
         }
@@ -251,19 +249,17 @@ exports.getAdminAssignmentOverview = async (req, res) => {
 
 
 exports.getAssignmentFile = async (req, res) => {
-    const { assignmentUrl } = req.query; // Frontend will send the full S3 URL
+    const { assignmentUrl } = req.query; 
     console.log("Fetching assignment file from URL:", assignmentUrl);
 
     if (!assignmentUrl) {
         return res.status(400).json({ success: false, message: "Assignment URL is required." });
     }
-    // Extract the S3 key (path within the bucket) from the full S3 URL
-    // Example URL: https://<bucket-name>.s3.<region>.amazonaws.com/webdev/my-assignment.pdf
     const urlParts = assignmentUrl.split('.com/');
     if (urlParts.length < 2) {
         return res.status(400).json({ success: false, message: "Invalid assignment URL format." });
     }
-    const key = urlParts[1]; // This extracts 'webdev/my-assignment.pdf'
+    const key = urlParts[1];
 
     const bucketName = process.env.AWS_BUCKET_NAME;
 
@@ -272,15 +268,14 @@ exports.getAssignmentFile = async (req, res) => {
             new GetObjectCommand({ Bucket: bucketName, Key: key })
         );
 
-        // Set headers for streaming the file
+
         res.setHeader("Content-Type", ContentType || "application/octet-stream");
         res.setHeader("Content-Length", ContentLength);
 
-        // Determine content disposition (inline to open in browser, attachment to force download)
-        const filenameFromKey = key.split('/').pop(); // Extract original filename from S3 key
-        res.setHeader("Content-Disposition", `inline; filename="${filenameFromKey}"`); // Forces browser to open if possible, otherwise downloads
 
-        // Pipe the S3 object stream directly to the response
+        const filenameFromKey = key.split('/').pop(); 
+        res.setHeader("Content-Disposition", `inline; filename="${filenameFromKey}"`); 
+
         Body.pipe(res);
 
         Body.on("error", (err) => {
@@ -308,8 +303,7 @@ exports.getAssignmentFile = async (req, res) => {
 
 
 exports.generateAssignmentDownloadUrl = async (req, res) => {
-    const { assignmentUrl } = req.query; // The full S3 URL of the assignment file
-
+    const { assignmentUrl } = req.query; 
     if (!assignmentUrl) {
         return res.status(400).json({ success: false, message: "Assignment URL is required." });
     }
@@ -319,7 +313,8 @@ exports.generateAssignmentDownloadUrl = async (req, res) => {
         if (urlParts.length < 2) {
             return res.status(400).json({ success: false, message: "Invalid assignment URL format." });
         }
-        const key = urlParts[1]; // Extracts 'webdev/my-assignment.pdf'
+        const key = urlParts[1]; 
+        
 
         const bucketName = process.env.AWS_BUCKET_NAME;
 
@@ -445,7 +440,7 @@ exports.gradeSubmission = async (req, res) => {
 
 exports.getStudentAssignmentResults = async (req, res) => {
     try {
-        const studentId = req.user.userId; // From UserAuth middleware
+        const studentId = req.user.userId;
 
         if (!mongoose.Types.ObjectId.isValid(studentId)) {
             return res.status(400).json({ success: false, message: "Invalid student ID." });
@@ -460,11 +455,11 @@ exports.getStudentAssignmentResults = async (req, res) => {
                     { path: 'course', select: 'title' }
                 ]
             })
-            .populate('gradedBy', 'email') // Populate admin email
+            .populate('gradedBy', 'email') 
             .sort({ submittedAt: -1 });
 
-        // Separate submissions into graded and pending for easier display on frontend
-        const gradedSubmissions = submissions.filter(s => s.grade !== undefined && s.grade !== null);
+
+            const gradedSubmissions = submissions.filter(s => s.grade !== undefined && s.grade !== null);
         const pendingSubmissions = submissions.filter(s => s.grade === undefined || s.grade === null);
 
 
@@ -480,10 +475,11 @@ exports.getStudentAssignmentResults = async (req, res) => {
 
 
 exports.generateAssignmentTasks = async (req, res) => {
-    // Ensure the model is initialized before trying to use it
+
     if (!textGenModel) {
         console.warn("Gemini model not yet initialized. Attempting to initialize now.");
-        await initializeGeminiModel(); // Try to initialize if it wasn't ready
+        await initializeGeminiModel(); 
+        
         if (!textGenModel) {
             return res.status(500).json({ success: false, message: "Gemini AI model not ready. Please check backend logs." });
         }
