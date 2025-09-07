@@ -66,45 +66,61 @@ const ClientLogin = ({ onClose, onSwitchForm }) => {
         <h3 className=" text-2xl font-semibold text-gray-900">Welcome Back</h3>
         <p className="text-gray-600 text-sm">Login to your account</p>
       </div>
-      <form onSubmit={handleLogin} className="mt-6">
-        <input
-          type="email"
-          name="email"
-          placeholder="Email Address"
-          value={formData.email}
-          onChange={handleChange}
-          className="w-full px-4 py-2 rounded-lg bg-gray-100 text-gray-900 placeholder-gray-500 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          required
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-          className="w-full px-4 py-2 mt-3 rounded-lg bg-gray-100 text-gray-900 placeholder-gray-500 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          required
-        />
-        <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-3">
-          <button type="button" onClick={() => onSwitchForm("forgot")} className="text-sm text-blue-500 hover:underline order-2 sm:order-1">Forgot Password?</button>
-          <button
-            type="submit"
-            className="px-6 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md transition-all duration-300 w-full sm:w-auto order-1 sm:order-2"
-            disabled={loading}
-          >
-            {loading ? "Signing In..." : "Sign In"}
-          </button>
-        </div>
-        <div className="mt-4 text-center">
-          <button
-            type="button"
-            onClick={() => onSwitchForm("adminLogin")}
-            className="text-sm text-gray-500 cursor-pointer hover:text-blue-500 transition-colors underline"
-          >
-            Login as Admin
-          </button>
-        </div>
-      </form>
+     <form onSubmit={handleLogin} className="mt-6">
+  <input
+    type="email"
+    name="email"
+    placeholder="Email Address"
+    value={formData.email}
+    onChange={handleChange}
+    className="w-full px-4 py-2 rounded-lg bg-gray-100 text-gray-900 placeholder-gray-500 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+    required
+  />
+  <p className="text-blue-500 text-sm mt-2">
+    Test Email: <span className="font-medium">arthp2210@gmail.com</span>
+  </p>
+
+  <input
+    type="password"
+    name="password"
+    placeholder="Password"
+    value={formData.password}
+    onChange={handleChange}
+    className="w-full px-4 py-2 mt-3 rounded-lg bg-gray-100 text-gray-900 placeholder-gray-500 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+    required
+  />
+  <p className="text-blue-500 text-sm mt-2">
+    Test Password: <span className="font-medium">arthp2210@gmail.com</span>
+  </p>
+
+  <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-3">
+    <button
+      type="button"
+      onClick={() => onSwitchForm("forgot")}
+      className="text-sm text-blue-500 hover:underline order-2 sm:order-1"
+    >
+      Forgot Password?
+    </button>
+    <button
+      type="submit"
+      className="px-6 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md transition-all duration-300 w-full sm:w-auto order-1 sm:order-2"
+      disabled={loading}
+    >
+      {loading ? "Signing In..." : "Sign In"}
+    </button>
+  </div>
+
+  <div className="mt-4 text-center">
+    <button
+      type="button"
+      onClick={() => onSwitchForm("adminLogin")}
+      className="text-sm text-gray-500 cursor-pointer hover:text-blue-500 transition-colors underline"
+    >
+      Login as Admin
+    </button>
+  </div>
+</form>
+
       <div className="mt-6 text-center text-gray-600">
         Don't have an account?{" "}
         <button type="button" onClick={() => onSwitchForm("signup")} className="text-blue-500 cursor-pointer hover:underline">

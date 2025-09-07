@@ -132,43 +132,7 @@ LearnHub is a comprehensive e-learning platform that provides two distinct user 
 
 > **Note**: Use these credentials to explore the student portal and course features.
 
-## Screenshots
 
-### Home Page
-![Home Page](./Screenshots/home.png)
-
-### Admin Dashboard
-![Admin Dashboard](./Screenshots/admin_dashboard.png)
-
-### Student Management
-![Student Management](./Screenshots/admin_allstudent.png)
-
-### AI Assignment Generator
-![AI Assignment Generator](./Screenshots/Screenshot%202025-09-07%20121405.png)
-
-### Enrolled Students
-![Enrolled Students](./Screenshots/admin_enrolledstudent.png)
-
-### Video Management
-![Video Management](./Screenshots/admin_video.png)
-
-### Course Management
-![Course Management](./Screenshots/admin_course.png)
-
-### Assignment Review
-![Assignment Review](./Screenshots/admin_assigemnt.png)
-
-### User Dashboard
-![User Dashboard](./Screenshots/user_dashboard.png)
-
-### User Profile
-![User Profile](./Screenshots/user_profile.png)
-
-### Learning Interface
-![Learning Interface](./Screenshots/user_learning.png)
-
-### Student Assignments
-![Student Assignments](./Screenshots/user_assigemnt.png)
 
 ## Getting Started
 
